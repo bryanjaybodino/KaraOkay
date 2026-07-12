@@ -105,16 +105,6 @@
 
         if (roomParam) {
             roomInput.value = roomParam.toUpperCase();
-            // Auto-focus to name input for singer to enter their name
-            if (!nameInput.value) {
-                nameInput.focus();
-                joinError.textContent = "Welcome! Enter your name to join.";
-            } else {
-                // If name is already filled (from storage), auto-join
-                setTimeout(function () {
-                    joinBtn.click();
-                }, 300);
-            }
         }
     })();
 
@@ -222,7 +212,7 @@
             + "&q=" + encodeURIComponent(query +" karaoke")
             + "&type=video"
             + "&videoEmbeddable=true"
-            + "&maxResults=10"
+            + "&maxResults=15"
             + "&key=" + Karaoke.Config.YOUTUBE_API_KEY;
 
         fetch(url)
