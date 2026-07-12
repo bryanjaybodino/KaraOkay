@@ -10,3 +10,6 @@
 *.cache
 *.vs
 /packages/BNet.WebSocket.Server.12.0.0
+/KaraOkay/bin/KaraOkay.dll
+/KaraOkay/bin/KaraOkay.pdb
+/KaraOkay/bin/KaraOkay

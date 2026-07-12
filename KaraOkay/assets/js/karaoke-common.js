@@ -12,7 +12,7 @@ var Karaoke = Karaoke || {};
 
 Karaoke.Config = {
     // Fixed dev WebSocket endpoint per project setup.
-    WS_URL: "ws://192.168.1.2:7892",
+    WS_URL: "wss://bnetwebsocket.bryanjaybodino.com",
 
     // Get a key at https://console.cloud.google.com/apis/library/youtube.googleapis.com
     // then restrict it to the "YouTube Data API v3" + your site's HTTP referrer.

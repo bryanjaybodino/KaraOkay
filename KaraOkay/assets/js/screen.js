@@ -29,12 +29,12 @@
     (function generateQRCode() {
         let path = window.location.pathname;
 
-        if (/KaraokeScreen\.aspx$/i.test(path)) {
-            path = path.replace(/KaraokeScreen\.aspx$/i, "KaraokeRemote.aspx");
+        if (/KaraokeScreen/i.test(path)) {
+            path = path.replace(/KaraokeScreen/i, "KaraokeRemote");
         } else if (path.endsWith("/")) {
-            path += "KaraokeRemote.aspx";
+            path += "KaraokeRemote";
         } else {
-            path += "/KaraokeRemote.aspx";
+            path += "/KaraokeRemote";
         }
 
         const remoteUrl = window.location.origin +
