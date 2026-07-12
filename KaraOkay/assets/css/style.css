@@ -605,3 +605,64 @@ button {
         padding: 20px 16px 32px;
     }
 }
+
+
+
+
+/* Fallback styling for the connection-status banner — move into
+           style.css and re-theme as you like. */
+.conn-status {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.conn-status--reconnecting {
+    background: #fff3cd;
+    color: #7a5b00;
+}
+
+.conn-status--connected {
+    background: #d4edda;
+    color: #155724;
+}
+/* One-time gate so the browser will allow autoplay-with-sound for
+           the rest of this page session. Browsers block audio autoplay
+           until there's been a real click/tap directly on the page —
+           nobody normally touches the TV screen, so without this the
+           very first (and only the first) video silently fails to play. */
+.start-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(10, 6, 22, .92);
+    color: var(--text);
+    text-align: center;
+    cursor: pointer;
+}
+
+.start-overlay__button {
+    background: var(--pink, #FF2E88);
+    color: #1a0a12;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 28px;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.start-overlay__hint {
+    font-size: 13px;
+    color: var(--text-muted, #A99FC9);
+    max-width: 320px;
+}

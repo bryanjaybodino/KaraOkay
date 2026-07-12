@@ -1,5 +1,6 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="KaraokeScreen.aspx.cs" Inherits="KaraOkay.KaraokeScreen" %>
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head runat="server">
@@ -9,26 +10,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <link href="assets/css/style.css" rel="stylesheet" />
-    <style>
-        /* Fallback styling for the connection-status banner — move into
-           style.css and re-theme as you like. */
-        .conn-status {
-            margin-top: 8px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-        }
-        .conn-status--reconnecting {
-            background: #fff3cd;
-            color: #7a5b00;
-        }
-        .conn-status--connected {
-            background: #d4edda;
-            color: #155724;
-        }
-    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -54,6 +35,10 @@
                             <span></span><span></span><span></span><span></span><span></span>
                         </div>
                         <p>Waiting for the first song&hellip;</p>
+                    </div>
+                    <div class="start-overlay" id="startOverlay">
+                        <button type="button" class="start-overlay__button" id="startOverlayBtn">&#127908; Tap to Start the Party</button>
+                        <div class="start-overlay__hint">Browsers block autoplay with sound until the screen itself is tapped once &mdash; this only takes one tap for the whole party.</div>
                     </div>
                 </div>
 

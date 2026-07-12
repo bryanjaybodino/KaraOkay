@@ -17,6 +17,81 @@
     var joinBtn = document.getElementById("joinBtn");
     var joinError = document.getElementById("joinError");
 
+    /* ---- YouTube IFrame API (used only to probe playability) ------------ */
+    // The Data API's status/contentDetails fields don't catch everything —
+    // notably regional content blocks on copyrighted "karaoke version"
+    // uploads. The only fully reliable check is to actually try loading the
+    // video, so we keep a hidden player around for that purpose.
+    var ytApiReady = false;
+    window.onYouTubeIframeAPIReady = function () { ytApiReady = true; };
+    (function loadYouTubeApi() {
+        var tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+    })();
+
+    // Actually attempts to load videoId in a throwaway hidden player and
+    // reports back whether it came up clean or errored out. Fails open
+    // (assumes playable) if the API isn't ready or nothing happens within
+    // the timeout, so a slow/broken probe never blocks a reservation.
+    function testPlayability(videoId, callback) {
+        if (!ytApiReady || !window.YT || !YT.Player) {
+            callback(true);
+            return;
+        }
+
+        var container = document.createElement("div");
+        container.style.position = "absolute";
+        container.style.left = "-9999px";
+        container.style.width = "1px";
+        container.style.height = "1px";
+        document.body.appendChild(container);
+
+        var settled = false;
+        var timeoutId;
+        var probePlayer;
+
+        function finish(ok) {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            try { if (probePlayer) probePlayer.destroy(); } catch (err) { /* ignore */ }
+            if (container.parentNode) container.parentNode.removeChild(container);
+            callback(ok);
+        }
+
+        probePlayer = new YT.Player(container, {
+            host: "https://www.youtube.com",
+            videoId: videoId,
+            playerVars: { controls: 0 },
+            events: {
+                onReady: function (e) {
+                    // Being "ready" just means the player initialized — it
+                    // doesn't mean the video will actually play. Some
+                    // regional/licensing blocks only surface once playback
+                    // is actually attempted, so force that (muted, so
+                    // nothing's audible on the singer's phone).
+                    try {
+                        e.target.mute();
+                        e.target.playVideo();
+                    } catch (err) {
+                        finish(true); // don't block a reservation over our own probe bug
+                    }
+                },
+                onStateChange: function (e) {
+                    // PLAYING or BUFFERING both mean the stream genuinely
+                    // started — that's the real signal we're after.
+                    if (e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.BUFFERING) {
+                        finish(true);
+                    }
+                },
+                onError: function () { finish(false); }
+            }
+        });
+
+        timeoutId = setTimeout(function () { finish(true); }, 8000);
+    }
+
     nameInput.value = singerName;
     roomInput.value = localStorage.getItem("karaokeRoomCode") || "";
 
@@ -123,48 +198,120 @@
 
         var url = "https://www.googleapis.com/youtube/v3/search"
             + "?part=snippet&type=video&maxResults=8"
+            + "&videoEmbeddable=true"
             + "&q=" + encodeURIComponent(q + " karaoke")
             + "&key=" + Karaoke.Config.YOUTUBE_API_KEY;
 
         fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                searchResults.innerHTML = "";
                 if (!data.items || data.items.length === 0) {
                     searchResults.innerHTML = '<li class="qempty">No results. Try another search.</li>';
                     return;
                 }
-                data.items.forEach(function (item) {
-                    var videoId = item.id.videoId;
-                    var title = item.snippet.title;
-                    var channel = item.snippet.channelTitle;
-                    var thumb = item.snippet.thumbnails.default.url;
-
-                    var li = document.createElement("li");
-                    li.innerHTML =
-                        '<img src="' + thumb + '" alt="">' +
-                        '<span class="rmeta">' +
-                        '<span class="rtitle">' + escapeHtml(title) + '</span>' +
-                        '<span class="rchannel">' + escapeHtml(channel) + '</span>' +
-                        '</span>' +
-                        '<button type="button">Reserve</button>';
-
-                    li.querySelector("button").addEventListener("click", function () {
-                        socket.send({
-                            action: "add",
-                            singer: singerName,
-                            videoId: videoId,
-                            title: title,
-                            thumb: thumb
-                        });
-                    });
-
-                    searchResults.appendChild(li);
-                });
+                searchResults.innerHTML = '<li class="qempty">Checking which ones will actually play\u2026</li>';
+                return filterPlayable(data.items);
+            })
+            .then(function (playableItems) {
+                if (!playableItems) return; // Already handled the "no results" case above.
+                renderResults(playableItems);
             })
             .catch(function () {
                 searchResults.innerHTML = '<li class="qempty">Search failed. Check your API key and connection.</li>';
             });
+    }
+
+    // videoEmbeddable=true on the search call filters out most unplayable
+    // videos, but it misses things like age-restricted uploads (which often
+    // fail on embeds with a "sign in to confirm you're not a bot" error).
+    // A follow-up videos.list call gives us that detail so we can drop them
+    // before the singer ever sees them.
+    function filterPlayable(searchItems) {
+        var ids = searchItems.map(function (item) { return item.id.videoId; });
+
+        var url = "https://www.googleapis.com/youtube/v3/videos"
+            + "?part=status,contentDetails"
+            + "&id=" + ids.join(",")
+            + "&key=" + Karaoke.Config.YOUTUBE_API_KEY;
+
+        return fetch(url)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var okIds = {};
+                (data.items || []).forEach(function (v) {
+                    var status = v.status || {};
+                    var content = v.contentDetails || {};
+                    var ageRestricted = content.contentRating
+                        && content.contentRating.ytRating === "ytAgeRestricted";
+
+                    if (status.embeddable !== false
+                        && status.uploadStatus === "processed"
+                        && status.privacyStatus !== "private"
+                        && !ageRestricted) {
+                        okIds[v.id] = true;
+                    }
+                });
+
+                var filtered = searchItems.filter(function (item) {
+                    return okIds[item.id.videoId];
+                });
+
+                if (filtered.length === 0) {
+                    searchResults.innerHTML = '<li class="qempty">Found matches, but none of them are playable here. Try another search.</li>';
+                    return null;
+                }
+                return filtered;
+            })
+            .catch(function () {
+                // If the playability check itself fails, don't block the
+                // singer entirely — fall back to the (already embeddable-
+                // filtered) search results as-is.
+                return searchItems;
+            });
+    }
+
+    function renderResults(items) {
+        searchResults.innerHTML = "";
+        items.forEach(function (item) {
+            var videoId = item.id.videoId;
+            var title = item.snippet.title;
+            var channel = item.snippet.channelTitle;
+            var thumb = item.snippet.thumbnails.default.url;
+
+            var li = document.createElement("li");
+            li.innerHTML =
+                '<img src="' + thumb + '" alt="">' +
+                '<span class="rmeta">' +
+                '<span class="rtitle">' + escapeHtml(title) + '</span>' +
+                '<span class="rchannel">' + escapeHtml(channel) + '</span>' +
+                '</span>' +
+                '<button type="button">Reserve</button>';
+
+            var reserveBtn = li.querySelector("button");
+            reserveBtn.addEventListener("click", function () {
+                reserveBtn.disabled = true;
+                reserveBtn.textContent = "Checking\u2026";
+
+                testPlayability(videoId, function (ok) {
+                    if (!ok) {
+                        reserveBtn.textContent = "Unavailable";
+                        li.style.opacity = "0.5";
+                        li.title = "This video can't be played here \u2014 try another.";
+                        return;
+                    }
+                    socket.send({
+                        action: "add",
+                        singer: singerName,
+                        videoId: videoId,
+                        title: title,
+                        thumb: thumb
+                    });
+                    reserveBtn.textContent = "Reserved!";
+                });
+            });
+
+            searchResults.appendChild(li);
+        });
     }
 
     /* ---- render state ------------------------------------------------------- */

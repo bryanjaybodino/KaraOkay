@@ -42,6 +42,22 @@
     var socket = new Karaoke.Socket(roomCode);
     var player = null;
     var playerReady = false;
+    var audioUnlocked = false;
+
+    /* ---- one-time autoplay unlock -------------------------------------- */
+
+    (function wireStartOverlay() {
+        var overlay = document.getElementById("startOverlay");
+        var btn = document.getElementById("startOverlayBtn");
+        btn.addEventListener("click", function () {
+            audioUnlocked = true;
+            overlay.hidden = true;
+            // If a song already loaded (or tried to) before this tap, it was
+            // very likely blocked — this click is a real user gesture, so
+            // kicking playVideo() now will actually start it.
+            if (playerReady && player && state.nowPlaying) player.playVideo();
+        });
+    })();
 
     /* ---- YouTube IFrame API -------------------------------------------- */
 
@@ -53,10 +69,18 @@
                 onReady: function () {
                     playerReady = true;
                     // If we restored a "now playing" song after a refresh, resume it.
-                    if (state.nowPlaying) player.loadVideoById(state.nowPlaying.videoId);
+                    if (state.nowPlaying) {
+                        player.loadVideoById(state.nowPlaying.videoId);
+                        if (audioUnlocked) player.playVideo();
+                    }
                 },
                 onStateChange: function (e) {
                     if (e.data === YT.PlayerState.ENDED) playNext();
+                },
+                onError: function (e) {
+                    // 2 = bad video id, 5 = HTML5 player error, 100 = removed/private,
+                    // 101 & 150 = embedding disabled by the video owner.
+                    handlePlaybackError(e.data);
                 }
             }
         });
@@ -77,7 +101,10 @@
         } else {
             state.nowPlaying = state.queue.shift();
             showIdle(false);
-            if (playerReady && player) player.loadVideoById(state.nowPlaying.videoId);
+            if (playerReady && player) {
+                player.loadVideoById(state.nowPlaying.videoId);
+                if (audioUnlocked) player.playVideo();
+            }
         }
         render();
         broadcastState();
@@ -85,6 +112,19 @@
 
     function showIdle(isIdle) {
         document.getElementById("idleScreen").hidden = !isIdle;
+    }
+
+    function handlePlaybackError(code) {
+        var idleText = document.querySelector("#idleScreen p");
+        var original = idleText ? idleText.textContent : null;
+
+        showIdle(true);
+        if (idleText) idleText.textContent = "That video isn't available \u2014 skipping to the next song\u2026";
+
+        setTimeout(function () {
+            if (idleText && original !== null) idleText.textContent = original;
+            playNext();
+        }, 2200);
     }
 
     function applyAction(msg) {
@@ -194,9 +234,33 @@
 
     /* ---- wire up socket ----------------------------------------------------- */
 
+    var connStatus = document.getElementById("connStatus");
+
     socket.onMessage = function (msg) {
         // Only react to action messages from remotes; ignore our own "state" echoes.
         if (msg && msg.action) applyAction(msg);
+    };
+
+    socket.onClose = function () {
+        connStatus.hidden = false;
+        connStatus.className = "conn-status conn-status--reconnecting";
+        connStatus.textContent = "Connection lost \u2014 reconnecting\u2026";
+    };
+
+    socket.onReconnecting = function (attempt) {
+        connStatus.hidden = false;
+        connStatus.className = "conn-status conn-status--reconnecting";
+        connStatus.textContent = "Reconnecting\u2026 (attempt " + attempt + ")";
+    };
+
+    socket.onReconnected = function () {
+        connStatus.hidden = false;
+        connStatus.className = "conn-status conn-status--connected";
+        connStatus.textContent = "Back online!";
+        // Remotes may have missed updates while we were disconnected —
+        // push the current state out again now that we're back.
+        broadcastState();
+        setTimeout(function () { connStatus.hidden = true; }, 2500);
     };
 
     function init() {
