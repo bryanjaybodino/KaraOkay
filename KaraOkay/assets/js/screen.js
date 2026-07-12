@@ -193,9 +193,16 @@
 
             case "control":
                 if (!playerReady) break;
-                if (msg.cmd === "play") player.playVideo();
-                else if (msg.cmd === "pause") player.pauseVideo();
-                else if (msg.cmd === "skip") player.pauseVideo(); playNext();
+                if (msg.cmd === "play") {
+                    player.playVideo();
+                }
+                else if (msg.cmd === "pause") {
+                    player.pauseVideo();
+                }
+                else if (msg.cmd === "skip") {
+                    player.pauseVideo();
+                    playNext();
+                }
                 break;
 
             case "requestState":
