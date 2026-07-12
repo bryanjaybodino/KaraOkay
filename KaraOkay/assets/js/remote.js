@@ -209,10 +209,10 @@
 
         var url = "https://www.googleapis.com/youtube/v3/search"
             + "?part=snippet"
-            + "&q=" + encodeURIComponent(query +" karaoke")
+            + "&q=" + encodeURIComponent(query +" karaoke minus one")
             + "&type=video"
             + "&videoEmbeddable=true"
-            + "&maxResults=15"
+            + "&maxResults=20"
             + "&key=" + Karaoke.Config.YOUTUBE_API_KEY;
 
         fetch(url)

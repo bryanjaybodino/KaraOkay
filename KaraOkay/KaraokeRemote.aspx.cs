@@ -11,7 +11,12 @@ namespace KaraOkay
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            if (!IsPostBack)
+            {
+                ScriptManager1.CompositeScript.Scripts.Add(new ScriptReference("~/assets/js/karaoke-common.js"));
+                ScriptManager1.CompositeScript.Scripts.Add(new ScriptReference("~/assets/js/remote.js"));
+                ScriptManager1.CompositeScript.Scripts.Add(new ScriptReference("~/assets/js/browser-security.js"));
+            }
         }
     }
 }

@@ -46,6 +46,10 @@
       <HintPath>..\packages\BNet.WebSocket.Server.12.0.0\lib\net48\BNet.WebSocket.Server.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Configuration.ConfigurationManager">
+      <HintPath>bin\System.Runtime.Caching\System.Configuration.ConfigurationManager.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -65,16 +69,27 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\css\style.css" />
+    <Content Include="assets\js\browser-security.js" />
+    <Content Include="assets\js\qrcode.min.js" />
     <Content Include="assets\js\remote.js" />
     <Content Include="assets\js\screen.js" />
     <Content Include="assets\js\karaoke-common.js" />
     <Content Include="Global.asax" />
+    <Content Include="HTML\400.html" />
+    <Content Include="HTML\403.html" />
+    <Content Include="HTML\404.html" />
     <Content Include="KaraokeRemote.aspx" />
     <Content Include="KaraokeScreen.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BNetWebsocket\Setup.cs" />
+    <Compile Include="Functions\ErrorLogs.cs" />
+    <Compile Include="Functions\FileCssHelper.cs" />
+    <Compile Include="Functions\FileJsHelpler.cs" />
+    <Compile Include="Functions\IPAddressChecker.cs" />
+    <Compile Include="Functions\MyCookies.cs" />
+    <Compile Include="Functions\SecuredData.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

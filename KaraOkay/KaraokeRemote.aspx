@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="KaraokeRemote.aspx.cs" Inherits="KaraOkay.KaraokeRemote" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" ViewStateMode="Disabled" EnableViewState="false" CodeBehind="KaraokeRemote.aspx.cs" Inherits="KaraOkay.KaraokeRemote" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,11 +8,11 @@
     <title>Kara-Okay &mdash; Remote</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link href="assets/css/style.css" rel="stylesheet" />
+    <% Response.Write(KaraOkay.FileCssHelper.StyleSheetVersion("assets/css/style.css")); %>
 </head>
 <body>
     <form id="form1" runat="server">
-
+        <asp:ScriptManager ID="ScriptManager1" EnableCdn="false" EnablePageMethods="true" EnablePartialRendering="true" AsyncPostBackTimeout="99999999" ScriptMode="Release" ValidateRequestMode="Enabled" EnableScriptLocalization="true" EnableScriptGlobalization="true" LoadScriptsBeforeUI="false" CompositeScript-ScriptMode="Release" CompositeScript-ResourceUICultures="Release" runat="server"></asp:ScriptManager>
         <div class="remote" id="joinView">
             <h1 class="logo">KARA<span class="logo__accent">-OKAY</span></h1>
             <p class="tagline">Your pocket mic control</p>
@@ -24,7 +24,7 @@
 
             <div class="field">
                 <label for="singerNameInput">Your name</label>
-                <input type="text" id="singerNameInput" maxlength="40" placeholder="e.g. Reggie" />
+                <input type="text" id="singerNameInput" maxlength="40" placeholder="e.g. Bryan Jay" />
             </div>
 
             <button type="button" id="joinBtn">Connect</button>
@@ -63,12 +63,8 @@
                 <div class="eyebrow">Reservations</div>
                 <ol class="queue-list" id="remoteQueueList"></ol>
             </section>
-
         </div>
-
     </form>
 
-    <script src="assets/js/karaoke-common.js"></script>
-    <script src="assets/js/remote.js"></script>
 </body>
 </html>

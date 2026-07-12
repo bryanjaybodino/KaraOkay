@@ -1,0 +1,104 @@
+﻿<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Access Blocked</title>
+    <style>
+        :root{--bg:#f4f6fb;--surface:#ffffff;--surface-2:#f0f2f8;--border:#e2e6f0;--text:#1a1d2e;--text-muted:#6b7280;--accent:#e53e3e;--accent-soft:#fff0f0;--accent-ring:rgba(229,62,62,.18);--timer-track:#e2e6f0;--timer-fill:#e53e3e;--btn-bg:#1a1d2e;--btn-text:#ffffff;--btn-hover:#2d3150;--shadow:0 8px 40px rgba(0,0,0,.08);--radius:16px}.theme-dark{--bg:#0f1117;--surface:#1a1d2e;--surface-2:#252840;--border:#2d3150;--text:#e8eaf6;--text-muted:#8b90b8;--accent:#fc5f5f;--accent-soft:rgba(252,95,95,.08);--accent-ring:rgba(252,95,95,.22);--timer-track:#2d3150;--timer-fill:#fc5f5f;--btn-bg:#e8eaf6;--btn-text:#0f1117;--btn-hover:#ffffff;--shadow:0 8px 40px rgba(0,0,0,.4)}.theme-default{--bg:#eef1f8;--surface:#ffffff;--surface-2:#e8ecf5;--border:#d8ddef;--text:#1e2140;--text-muted:#64748b;--accent:#d63031;--accent-soft:#fff5f5;--accent-ring:rgba(214,48,49,.15);--timer-track:#d8ddef;--timer-fill:#d63031;--btn-bg:#1e2140;--btn-text:#ffffff;--btn-hover:#2d3464;--shadow:0 8px 40px rgba(0,0,0,.07)}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.35;pointer-events:none;z-index:0}.card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);max-width:480px;width:100%;padding:48px 40px 40px;text-align:center;animation:slideUp .45s cubic-bezier(.22,1,.36,1) both}@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}.icon-wrap{width:80px;height:80px;border-radius:50%;background:var(--accent-soft);border:2px solid var(--accent-ring);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:pulse 2.5s ease-in-out infinite}.icon-wrap i{font-size:36px;color:var(--accent);fill:var(--accent)}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-ring)}50%{box-shadow:0 0 0 12px #fff0}}h1{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-bottom:10px;color:var(--text)}.subtitle{font-size:.95rem;color:var(--text-muted);line-height:1.6;margin-bottom:32px}.timer-section{margin-bottom:32px}.ring-container{position:relative;width:110px;height:110px;margin:0 auto 14px}.ring-svg{transform:rotate(-90deg);width:110px;height:110px}.ring-track{fill:none;stroke:var(--timer-track);stroke-width:7}.ring-fill{fill:none;stroke:var(--timer-fill);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .3s}.ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.ring-label .seconds{font-size:1.8rem;font-weight:800;color:var(--text);line-height:1}.ring-label .unit{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}.timer-message{font-size:.85rem;color:var(--text-muted)}.divider{height:1px;background:var(--border);margin:0 0 28px}.btn-primary-custom{display:inline-flex;align-items:center;gap:8px;background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:10px;padding:12px 28px;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s,transform .15s,opacity .2s;width:100%;justify-content:center;margin-bottom:12px}.btn-primary-custom:hover:not(:disabled){background:var(--btn-hover);transform:translateY(-1px)}.btn-primary-custom:disabled{opacity:.45;cursor:not-allowed;transform:none}.btn-outline-custom{display:inline-flex;align-items:center;gap:8px;background:#fff0;color:var(--text-muted);border:1px solid var(--border);border-radius:10px;padding:11px 28px;font-size:.9rem;font-weight:500;cursor:pointer;transition:border-color .2s,color .2s,background .2s;width:100%;justify-content:center;text-decoration:none}.btn-outline-custom:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}.info-chip{align-items:center!important;gap:6px!important;background:var(--surface-2)!important;border:1px solid var(--border);border-radius:99px!important;padding:5px 14px!important;font-size:.78rem!important;color:var(--text-muted)!important;margin-bottom:28px!important}.info-chip i{color:var(--accent);font-size:.85rem}.unblocked{display:none}.unblocked .icon-wrap{background:#f0fff4;border-color:rgb(34 197 94 / .2);animation:none}.unblocked .icon-wrap i{color:#16a34a}.unblocked h1{color:#15803d}
+    </style>
+    <script>
+        // ── 1. Apply theme from localStorage (same key the main app uses) ──
+        (function () {
+            var mode = localStorage.getItem('theme') || 'light';
+            var root = document.documentElement;
+            root.classList.remove('theme-dark', 'theme-default');
+            if (mode !== 'light') root.classList.add('theme-' + mode);
+        })();</script>
+</head>
+<body>
+
+
+    <div class="card" id="blockedCard">
+
+        <!-- Icon -->
+        <div class="icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" style="color: #E53E3E; zoom: 3" width="16" height="16" fill="currentColor" class="bi bi-shield-fill-exclamation" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m-.55 8.502L7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0M8.002 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+            </svg>
+        </div>
+
+        <!-- Heading -->
+        <h1>Access Blocked</h1>
+        <p class="subtitle">
+            Your request was flagged by our security system.<br />
+            This may be due to unusual activity from your IP address.
+
+        </p>
+
+        <!-- IP chip -->
+        <div class="info-chip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
+            </svg>
+            <span id="IPAddress"></span>
+        </div>
+
+        <!-- Countdown ring -->
+        <div class="timer-section">
+            <div class="ring-container">
+                <svg class="ring-svg" viewBox="0 0 110 110">
+                    <circle class="ring-track" cx="55" cy="55" r="48" />
+                    <circle class="ring-fill" cx="55" cy="55" r="48" id="ringFill" />
+                </svg>
+                <div class="ring-label">
+                    <span class="seconds h2" id="countDisplay">--</span>
+                    <span class="unit">sec</span>
+                </div>
+            </div>
+            <p class="timer-message" id="timerMsg">You can retry in <strong id="timerStrong">--</strong> seconds.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Buttons -->
+        <button class="btn-primary-custom" id="retryBtn" disabled>
+            <i class="bi bi-arrow-clockwise"></i>
+            <span id="retryLabel">Please wait…</span>
+        </button>
+    </div>
+
+    <!-- Unblocked state (shown after timer) -->
+    <div class="card unblocked" id="unblockedCard" style="display: none">
+        <div class="icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" style="color: #16a34a; zoom: 3" width="16" height="16" fill="currentColor" class="bi bi-shield-fill-check" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m2.146 5.146a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793z" />
+            </svg>
+        </div>
+        <h1 style="color: #15803d">You're Good to Go</h1>
+        <p class="subtitle">Your temporary block has been lifted. You may now continue.</p>
+
+        <span onclick="location.reload(true)" class="btn-primary-custom no-underline text-white" style="background: #16a34a; text-decoration: none">
+            <i class="bi bi-arrow-clockwise"></i>Refresh Now
+        </span>
+    </div>
+
+
+
+    <script>
+        let triggered=!1;function blockAction(message){if(triggered)return;triggered=!0;alert(message);window.location.href="about:blank"}
+        document.addEventListener('contextmenu',function(e){e.preventDefault()});document.addEventListener('keydown',function(e){if(e.keyCode===123){e.preventDefault();blockAction("Developer tools blocked")}
+        if(e.ctrlKey&&e.shiftKey&&e.keyCode===73){e.preventDefault();blockAction("Developer tools blocked")}
+        if(e.ctrlKey&&e.shiftKey&&e.keyCode===74){e.preventDefault();blockAction("Console blocked")}
+        if(e.ctrlKey&&e.keyCode===85){e.preventDefault();blockAction("View source blocked")}});setInterval(()=>{const widthDiff=window.outerWidth-window.innerWidth;const heightDiff=window.outerHeight-window.innerHeight;const suspiciousResize=widthDiff>200||heightDiff>200;const start=performance.now();debugger;const slowExecution=performance.now()-start>50;if(suspiciousResize&&slowExecution){blockAction("DevTools suspected")}},10);
+
+
+        function getCookie(name){const value=`; ${document.cookie}`;const parts=value.split(`; ${name}=`);if(parts.length===2)return parts.pop().split(";").shift();return null}
+        function getCookieBySuffix(suffix){const pairs=document.cookie.split(';');for(let pair of pairs){const[key,val]=pair.trim().split('=');if(key&&key.endsWith(suffix))return val||null}
+        return null}
+        const expiry=new Date(getCookieBySuffix("ban_expiry"));const ip=getCookieBySuffix("ban_ip");const now=new Date();var remainingMinutes=parseInt((expiry-now)/1000)||0;var TOTAL_SECONDS=0;var endTime=0;var tickTimer=null;var CIRCUMFERENCE=2*Math.PI*48;var ringFill=null;document.addEventListener('DOMContentLoaded',()=>{document.getElementById('IPAddress').innerHTML=ip;ringFill=document.getElementById('ringFill');if(!ringFill)return;ringFill.style.strokeDasharray=CIRCUMFERENCE;startCountdown(remainingMinutes)});function updateDisplay(remaining){remaining=Math.max(0,remaining);document.getElementById('countDisplay').textContent=remaining;document.getElementById('timerStrong').textContent=remaining;var progress=TOTAL_SECONDS>0?remaining/TOTAL_SECONDS:0;if(ringFill)ringFill.style.strokeDashoffset=CIRCUMFERENCE*(1-progress);var btn=document.getElementById('retryBtn');var label=document.getElementById('retryLabel');if(remaining<=0){btn.disabled=!1;label.textContent='Try Again Now';document.getElementById('timerMsg').textContent='Your block has been lifted. Click to retry.';document.getElementById('blockedCard').style.display='none';document.getElementById('unblockedCard').style.display='block'}}
+        function tick(){var remaining=Math.floor(endTime-Date.now()/1000);updateDisplay(remaining);if(remaining>0)tickTimer=setTimeout(tick,1000);}
+        function startCountdown(remainingMinutes){if(remainingMinutes<=0){updateDisplay(0);return}
+        TOTAL_SECONDS=remainingMinutes;endTime=Math.floor(Date.now()/1000)+TOTAL_SECONDS;if(tickTimer)clearTimeout(tickTimer);tick()}
+    </script>
+</body>
+</html>

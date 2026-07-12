@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="KaraokeScreen.aspx.cs" Inherits="KaraOkay.KaraokeScreen" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" ViewStateMode="Disabled" EnableViewState="false" CodeBehind="KaraokeScreen.aspx.cs" Inherits="KaraOkay.KaraokeScreen" %>
 
 
 <!DOCTYPE html>
@@ -9,11 +9,11 @@
     <title>Kara-Okay &mdash; Stage Screen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link href="assets/css/style.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <% Response.Write(KaraOkay.FileCssHelper.StyleSheetVersion("assets/css/style.css")); %>
 </head>
 <body>
     <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" EnableCdn="false" EnablePageMethods="true" EnablePartialRendering="true" AsyncPostBackTimeout="99999999" ScriptMode="Release" ValidateRequestMode="Enabled" EnableScriptLocalization="true" EnableScriptGlobalization="true" LoadScriptsBeforeUI="false" CompositeScript-ScriptMode="Release" CompositeScript-ResourceUICultures="Release" runat="server"></asp:ScriptManager>
         <div class="stage">
 
             <header class="stage__header">
@@ -68,8 +68,5 @@
 
         </div>
     </form>
-
-    <script src="assets/js/karaoke-common.js"></script>
-    <script src="assets/js/screen.js"></script>
 </body>
 </html>
