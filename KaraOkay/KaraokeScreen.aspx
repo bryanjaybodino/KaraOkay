@@ -9,6 +9,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <link href="assets/css/style.css" rel="stylesheet" />
+    <style>
+        /* Fallback styling for the connection-status banner — move into
+           style.css and re-theme as you like. */
+        .conn-status {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .conn-status--reconnecting {
+            background: #fff3cd;
+            color: #7a5b00;
+        }
+        .conn-status--connected {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -22,6 +42,7 @@
                 <div class="code-label">Join on your phone</div>
                 <div class="code-value" id="roomCode">-----</div>
                 <div class="code-hint">Open the remote page and enter this code</div>
+                <div class="conn-status" id="connStatus" hidden></div>
             </div>
 
             <div class="stage__main">

@@ -9,6 +9,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <link href="assets/css/style.css" rel="stylesheet" />
+    <style>
+        /* Fallback styling for the connection-status banner — move into
+           style.css and re-theme as you like. */
+        .conn-status {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .conn-status--reconnecting {
+            background: #fff3cd;
+            color: #7a5b00;
+        }
+        .conn-status--connected {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -37,6 +57,8 @@
                 <div class="room-pill">Room <strong id="roomPillCode"></strong></div>
                 <button type="button" id="leaveBtn" class="link-btn">Leave</button>
             </div>
+
+            <div class="conn-status" id="connStatus" hidden></div>
 
             <section class="now-panel">
                 <div class="eyebrow">Now Singing</div>

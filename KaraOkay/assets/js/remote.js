@@ -41,12 +41,32 @@
 
     function joinRoom(room) {
         document.getElementById("roomPillCode").textContent = room;
+        var connStatus = document.getElementById("connStatus");
 
         socket = new Karaoke.Socket(room);
         socket.onOpen = function () {
             joinView.hidden = true;
             controlView.hidden = false;
+            connStatus.hidden = true;
             socket.send({ action: "requestState" });
+        };
+        socket.onClose = function () {
+            // The socket wrapper will auto-retry unless this was a deliberate
+            // "Leave" — either way, let the singer know we're not live.
+            connStatus.hidden = false;
+            connStatus.className = "conn-status conn-status--reconnecting";
+            connStatus.textContent = "Connection lost \u2014 reconnecting\u2026";
+        };
+        socket.onReconnecting = function (attempt) {
+            connStatus.hidden = false;
+            connStatus.className = "conn-status conn-status--reconnecting";
+            connStatus.textContent = "Reconnecting\u2026 (attempt " + attempt + ")";
+        };
+        socket.onReconnected = function () {
+            connStatus.hidden = false;
+            connStatus.className = "conn-status conn-status--connected";
+            connStatus.textContent = "Back online!";
+            setTimeout(function () { connStatus.hidden = true; }, 2500);
         };
         socket.onError = function () {
             joinError.textContent = "Couldn't reach the party. Check the WebSocket server is running.";
@@ -62,6 +82,7 @@
 
     document.getElementById("leaveBtn").addEventListener("click", function () {
         if (socket) socket.close();
+        document.getElementById("connStatus").hidden = true;
         controlView.hidden = true;
         joinView.hidden = false;
     });
@@ -174,22 +195,42 @@
             var mine = item.singer === singerName;
             var li = document.createElement("li");
             if (mine) li.classList.add("qmine");
+            // Force a column layout on this item regardless of whatever the
+            // stylesheet's default row layout is, so the actions row below
+            // always gets its own full-width line instead of being squeezed
+            // out of the same row as the thumbnail/title on narrow screens.
+            li.style.display = "flex";
+            li.style.flexWrap = "wrap";
+            li.style.alignItems = "center";
 
-            li.innerHTML =
+            var topRow = document.createElement("div");
+            topRow.style.display = "flex";
+            topRow.style.alignItems = "center";
+            topRow.style.width = "100%";
+            topRow.innerHTML =
                 '<span class="qpos">' + (i + 1) + '</span>' +
                 '<img class="qthumb" src="' + item.thumb + '" alt="">' +
                 '<span class="qmeta">' +
                 '<span class="qtitle">' + escapeHtml(item.title) + '</span>' +
                 '<span class="qsinger">' + escapeHtml(item.singer || "Anonymous") + '</span>' +
                 '</span>';
+            li.appendChild(topRow);
 
             if (mine) {
                 var actions = document.createElement("span");
                 actions.className = "qactions";
+                // Guaranteed-visible layout: its own full-width row with
+                // real spacing, independent of the stylesheet.
+                actions.style.display = "flex";
+                actions.style.width = "100%";
+                actions.style.gap = "8px";
+                actions.style.marginTop = "8px";
+                actions.style.flexWrap = "wrap";
 
                 var bumpBtn = document.createElement("button");
                 bumpBtn.type = "button";
                 bumpBtn.textContent = "Bump to next";
+                bumpBtn.style.flex = "1 1 auto";
                 bumpBtn.addEventListener("click", function () {
                     socket.send({ action: "prioritize", id: item.id });
                 });
@@ -197,6 +238,7 @@
                 var cancelBtn = document.createElement("button");
                 cancelBtn.type = "button";
                 cancelBtn.textContent = "Cancel";
+                cancelBtn.style.flex = "1 1 auto";
                 cancelBtn.addEventListener("click", function () {
                     socket.send({ action: "remove", id: item.id });
                 });
