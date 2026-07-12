@@ -10,21 +10,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <link href="assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <form id="form1" runat="server">
         <div class="stage">
 
-            <header class="stage__brand">
-                <span class="logo">KARA<span class="logo__accent">-OKAY</span></span>
+            <header class="stage__header">
+                <div class="stage__brand">
+                    <span class="logo">KARA<span class="logo__accent">-OKAY</span></span>
+                </div>
+                <div class="stage__code-panel">
+                    <div class="code-info">
+                        <div class="code-label">Scan or enter:</div>
+                        <div class="code-value" id="roomCode">-----</div>
+                    </div>
+                    <div class="conn-status" id="connStatus" hidden></div>
+                </div>
             </header>
-
-            <div class="stage__code-panel">
-                <div class="code-label">Join on your phone</div>
-                <div class="code-value" id="roomCode">-----</div>
-                <div class="code-hint">Open the remote page and enter this code</div>
-                <div class="conn-status" id="connStatus" hidden></div>
-            </div>
 
             <div class="stage__main">
                 <div class="player-frame" id="playerFrame">
@@ -39,6 +42,13 @@
                     <div class="start-overlay" id="startOverlay">
                         <button type="button" class="start-overlay__button" id="startOverlayBtn">&#127908; Tap to Start the Party</button>
                         <div class="start-overlay__hint">Browsers block autoplay with sound until the screen itself is tapped once &mdash; this only takes one tap for the whole party.</div>
+                    </div>
+                    <!-- QR Code moved here as floating overlay -->
+                    <div class="qr-overlay">
+                        <div class="qr-overlay__label">SCAN HERE</div>
+                        <div class="qr-overlay__container">
+                            <div id="qrCode" class="code-qr"></div>
+                        </div>
                     </div>
                 </div>
 

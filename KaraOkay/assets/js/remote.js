@@ -3,6 +3,8 @@
    Joins a room by code, searches YouTube for songs, and sends action
    messages. Renders whatever "state" the screen last broadcast — this
    page never keeps its own source of truth for the queue.
+   
+   Enhanced: Auto-joins via QR code URL parameter
    ========================================================================== */
 
 (function () {
@@ -95,6 +97,27 @@
     nameInput.value = singerName;
     roomInput.value = localStorage.getItem("karaokeRoomCode") || "";
 
+    /* ---- QR Code URL Parameter Auto-Join -------------------------------- */
+
+    (function checkQRCodeParam() {
+        var params = new URLSearchParams(window.location.search);
+        var roomParam = params.get("room");
+
+        if (roomParam) {
+            roomInput.value = roomParam.toUpperCase();
+            // Auto-focus to name input for singer to enter their name
+            if (!nameInput.value) {
+                nameInput.focus();
+                joinError.textContent = "Welcome! Enter your name to join.";
+            } else {
+                // If name is already filled (from storage), auto-join
+                setTimeout(function () {
+                    joinBtn.click();
+                }, 300);
+            }
+        }
+    })();
+
     joinBtn.addEventListener("click", function () {
         var room = roomInput.value.trim().toUpperCase();
         var name = nameInput.value.trim();
@@ -186,38 +209,36 @@
     });
 
     function runSearch() {
-        var q = searchInput.value.trim();
-        if (!q) return;
-
-        if (!Karaoke.Config.YOUTUBE_API_KEY || Karaoke.Config.YOUTUBE_API_KEY.indexOf("YOUR_") === 0) {
-            searchResults.innerHTML = '<li class="qempty">Add a YouTube Data API key in js/karaoke-common.js to enable search.</li>';
+        var query = searchInput.value.trim();
+        if (!query) {
+            searchResults.innerHTML = '<li class="qempty">Enter a song title or artist name.</li>';
             return;
         }
 
-        searchResults.innerHTML = '<li class="qempty">Searching\u2026</li>';
+        searchResults.innerHTML = '<li class="qempty">Searching&hellip;</li>';
 
         var url = "https://www.googleapis.com/youtube/v3/search"
-            + "?part=snippet&type=video&maxResults=8"
+            + "?part=snippet"
+            + "&q=" + encodeURIComponent(query +" karaoke")
+            + "&type=video"
             + "&videoEmbeddable=true"
-            + "&q=" + encodeURIComponent(q + " karaoke")
+            + "&maxResults=10"
             + "&key=" + Karaoke.Config.YOUTUBE_API_KEY;
 
         fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (!data.items || data.items.length === 0) {
-                    searchResults.innerHTML = '<li class="qempty">No results. Try another search.</li>';
+                var items = data.items || [];
+                if (items.length === 0) {
+                    searchResults.innerHTML = '<li class="qempty">No results found.</li>';
                     return;
                 }
-                searchResults.innerHTML = '<li class="qempty">Checking which ones will actually play\u2026</li>';
-                return filterPlayable(data.items);
+                return filterPlayable(items);
             })
-            .then(function (playableItems) {
-                if (!playableItems) return; // Already handled the "no results" case above.
-                renderResults(playableItems);
-            })
-            .catch(function () {
-                searchResults.innerHTML = '<li class="qempty">Search failed. Check your API key and connection.</li>';
+            .then(renderResults)
+            .catch(function (err) {
+                console.error("Search failed:", err);
+                searchResults.innerHTML = '<li class="qempty">Search failed. Try again?</li>';
             });
     }
 

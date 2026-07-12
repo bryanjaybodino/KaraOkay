@@ -25,6 +25,39 @@
     }
     document.getElementById("roomCode").textContent = roomCode;
 
+    // Generate QR code pointing to the remote page with room code as query param
+    (function generateQRCode() {
+        let path = window.location.pathname;
+
+        if (/KaraokeScreen\.aspx$/i.test(path)) {
+            path = path.replace(/KaraokeScreen\.aspx$/i, "KaraokeRemote.aspx");
+        } else if (path.endsWith("/")) {
+            path += "KaraokeRemote.aspx";
+        } else {
+            path += "/KaraokeRemote.aspx";
+        }
+
+        const remoteUrl = window.location.origin +
+            path +
+            "?room=" + encodeURIComponent(roomCode);
+
+        var qrContainer = document.getElementById("qrCode");
+        try {
+            new QRCode(qrContainer, {
+                text: remoteUrl,
+                width: 100,
+                height: 100,
+                correctLevel: QRCode.CorrectLevel.L,  // Lower error correction = simpler, faster to scan
+                useSVG: false,                        // Canvas renders faster & scans better than SVG
+                colorDark: "#000000",                 // Pure black for maximum contrast
+                colorLight: "#FFFFFF"                 // Pure white background
+            });
+        } catch (err) {
+            console.warn("QR Code generation failed:", err);
+            qrContainer.innerHTML = '<div class="code-qr-error">QR unavailable</div>';
+        }
+    })();
+
     // Restore whatever queue/now-playing we last saved, so a refresh doesn't
     // wipe out songs that were already reserved.
     (function restoreState() {
@@ -162,7 +195,7 @@
                 if (!playerReady) break;
                 if (msg.cmd === "play") player.playVideo();
                 else if (msg.cmd === "pause") player.pauseVideo();
-                else if (msg.cmd === "skip") playNext();
+                else if (msg.cmd === "skip") player.pauseVideo(); playNext();
                 break;
 
             case "requestState":
