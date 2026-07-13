@@ -108,9 +108,16 @@ button {
     align-items: center;
 }
 
-    .stage__brand .logo {
-        font-size: 28px;
-    }
+.stage__header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
+
+.stage__brand .logo {
+    font-size: 28px;
+}
 
 .stage__code-panel {
     display: flex;
@@ -147,6 +154,29 @@ button {
     text-shadow: 0 0 14px rgba(255,201,74,.55);
     margin: 0;
     line-height: 1;
+}
+
+.fullscreen-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+}
+
+    .fullscreen-btn:hover {
+        color: var(--cyan);
+        border-color: var(--cyan);
+    }
+
+.fullscreen-btn__icon {
+    width: 20px;
+    height: 20px;
 }
 
 /* QR Code Overlay — modern floating design in video player upper right */
@@ -699,56 +729,7 @@ button {
     display: none !important;
 }
 
-@media (max-width: 1280px) and (orientation: portrait) {
-    .stage__main {
-        grid-template-columns: 1fr;
-    }
-}
 
-@media (max-width: 900px) and (orientation: portrait) {
-    .stage__header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .stage__code-panel {
-        width: 100%;
-    }
-
-    .code-value {
-        font-size: 20px;
-    }
-
-    .stage__brand .logo {
-        font-size: 24px;
-    }
-
-    /* QR overlay responsive */
-    .qr-overlay {
-        top: 12px;
-        right: 12px;
-        gap: 6px;
-    }
-
-    .qr-overlay__label {
-        font-size: 9px;
-    }
-
-    .qr-overlay__container {
-        padding: 8px;
-    }
-
-    .code-qr {
-        width: 80px;
-        height: 80px;
-    }
-
-    .code-qr-error {
-        width: 80px;
-        height: 80px;
-    }
-}
 
 /* Connection status styling */
 .conn-status {
@@ -806,4 +787,78 @@ button {
     font-size: 13px;
     color: var(--text-muted, #A99FC9);
     max-width: 320px;
+}
+
+/* ==========================================================================
+   PORTRAIT / NARROW SCREEN LAYOUT
+   The default layout above assumes a wide landscape TV: a single-row header
+   and a two-column grid (video + fixed 300px queue sidebar). On a narrow
+   portrait screen (e.g. a phone or tablet fullscreened in portrait) there
+   isn't room for either, so everything squeezes and overlaps. This section
+   switches to a stacked, single-column layout instead.
+   ========================================================================== */
+@media (orientation: portrait) {
+    .stage:fullscreen {
+        padding: 10px;
+        gap: 8px;
+    }
+
+        .stage:fullscreen .stage__header {
+            flex-wrap: nowrap;
+        }
+
+        .stage:fullscreen .stage__header-left {
+            gap: 10px;
+            min-width: 0;
+            flex-wrap: wrap;
+            row-gap: 6px;
+        }
+
+        .stage:fullscreen .stage__brand .logo {
+            font-size: 18px;
+        }
+
+        .stage:fullscreen .stage__code-panel {
+            padding: 8px 12px;
+            gap: 10px;
+        }
+
+        .stage:fullscreen .code-value {
+            font-size: 18px;
+            letter-spacing: .18em;
+        }
+
+        .stage:fullscreen .fullscreen-btn {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+        }
+
+        .stage:fullscreen .fullscreen-btn__icon {
+            width: 16px;
+            height: 16px;
+        }
+        /* Stack video above the queue instead of side-by-side */
+        .stage:fullscreen .stage__main {
+            grid-template-columns: 1fr;
+            grid-template-rows: minmax(0, 1fr) minmax(140px, 220px);
+            gap: 10px;
+        }
+
+        .stage:fullscreen .queue-panel {
+            gap: 8px;
+        }
+
+        .stage:fullscreen .now-singing,
+        .stage:fullscreen .up-next {
+            padding: 10px 12px;
+        }
+}
+
+/* Ensure the fullscreened element itself fills the screen on all engines */
+.stage:fullscreen,
+.stage:-webkit-full-screen,
+.stage:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
 }

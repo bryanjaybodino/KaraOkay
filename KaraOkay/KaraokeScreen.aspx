@@ -5,7 +5,6 @@
 <html lang="en">
 <head runat="server">
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=1280, initial-scale=1" />
     <title>Kara-Okay &mdash; Stage Screen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -17,16 +16,32 @@
         <div class="stage">
 
             <header class="stage__header">
-                <div class="stage__brand">
-                    <span class="logo">KARA<span class="logo__accent">-OKAY</span></span>
-                </div>
-                <div class="stage__code-panel">
-                    <div class="code-info">
-                        <div class="code-label">Scan or enter:</div>
-                        <div class="code-value" id="roomCode">-----</div>
+                <div class="stage__header-left">
+                    <div class="stage__brand">
+                        <span class="logo">KARA<span class="logo__accent">-OKAY</span></span>
                     </div>
-                    <div class="conn-status" id="connStatus" hidden></div>
+                    <div class="stage__code-panel">
+                        <div class="code-info">
+                            <div class="code-label">Scan or enter</div>
+                            <div class="code-value" id="roomCode">-----</div>
+                        </div>
+                        <div class="conn-status" id="connStatus" hidden></div>
+                    </div>
                 </div>
+                <button type="button" class="fullscreen-btn" id="fullscreenBtn" title="Toggle fullscreen" aria-label="Toggle fullscreen">
+                    <svg class="fullscreen-btn__icon fullscreen-btn__icon--expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                        <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                        <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                        <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                    </svg>
+                    <svg class="fullscreen-btn__icon fullscreen-btn__icon--collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+                        <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+                        <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+                        <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+                    </svg>
+                </button>
             </header>
 
             <div class="stage__main">
@@ -67,6 +82,50 @@
             </div>
 
         </div>
+
+        <script>
+            (function () {
+                var btn = document.getElementById('fullscreenBtn');
+                var stage = document.querySelector('.stage');
+                var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
+                var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
+
+                function isFullscreen() {
+                    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+                }
+
+                function updateIcon() {
+                    var fs = isFullscreen();
+                    expandIcon.hidden = fs;
+                    collapseIcon.hidden = !fs;
+                    btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
+                }
+
+                function requestFs(el) {
+                    if (el.requestFullscreen) return el.requestFullscreen();
+                    if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+                    if (el.msRequestFullscreen) return el.msRequestFullscreen();
+                }
+
+                function exitFs() {
+                    if (document.exitFullscreen) return document.exitFullscreen();
+                    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+                    if (document.msExitFullscreen) return document.msExitFullscreen();
+                }
+
+                btn.addEventListener('click', function () {
+                    if (isFullscreen()) {
+                        exitFs();
+                    } else {
+                        requestFs(stage || document.documentElement);
+                    }
+                });
+
+                document.addEventListener('fullscreenchange', updateIcon);
+                document.addEventListener('webkitfullscreenchange', updateIcon);
+                document.addEventListener('msfullscreenchange', updateIcon);
+            })();
+        </script>
     </form>
 </body>
 </html>
