@@ -8,7 +8,7 @@ using System.Web.Services.Protocols;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
-namespace KaraOkay.Functions
+namespace KaraOkay
 {
     public class MyCookies
     {

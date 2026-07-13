@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Runtime.Caching;
 using System.Web;
 
-namespace KaraOkay.Functions
+namespace KaraOkay
 {
     public class IPAddressChecker
     {

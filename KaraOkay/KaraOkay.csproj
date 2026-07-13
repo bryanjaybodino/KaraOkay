@@ -43,7 +43,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BNet.WebSocket.Server, Version=12.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\BNet.WebSocket.Server.12.0.0\lib\net48\BNet.WebSocket.Server.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\BNet.WebSocket.Server.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Configuration.ConfigurationManager">
@@ -110,7 +111,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace KaraOkay.Functions
+namespace KaraOkay
 {
     public class SecuredData
     {

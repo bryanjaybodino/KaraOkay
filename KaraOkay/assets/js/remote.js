@@ -209,7 +209,7 @@
 
         var url = "https://www.googleapis.com/youtube/v3/search"
             + "?part=snippet"
-            + "&q=" + encodeURIComponent(query +" karaoke minus one")
+            + "&q=" + encodeURIComponent(query + " karaoke minus one")
             + "&type=video"
             + "&videoEmbeddable=true"
             + "&maxResults=20"
@@ -285,8 +285,8 @@
         searchResults.innerHTML = "";
         items.forEach(function (item) {
             var videoId = item.id.videoId;
-            var title = item.snippet.title;
-            var channel = item.snippet.channelTitle;
+            var title = decodeHtmlEntities(item.snippet.title);
+            var channel = decodeHtmlEntities(item.snippet.channelTitle);
             var thumb = item.snippet.thumbnails.default.url;
 
             var li = document.createElement("li");
@@ -414,5 +414,19 @@
         var d = document.createElement("div");
         d.textContent = s == null ? "" : s;
         return d.innerHTML;
+    }
+
+    // The YouTube Data API returns title/channel text with HTML entities
+    // already encoded as literal characters (e.g. "Ako&#39;y Sayo" instead
+    // of "Ako'y Sayo"). If that goes straight into escapeHtml(), the "&"
+    // gets escaped too and the entity shows up literally on screen instead
+    // of decoding to the character it represents. Decoding here, once, at
+    // the point the title/channel come in from the API, fixes it for both
+    // this page and the screen (since the decoded text is what gets sent
+    // over the socket in the "add" action).
+    function decodeHtmlEntities(s) {
+        var d = document.createElement("div");
+        d.innerHTML = s == null ? "" : s;
+        return d.textContent;
     }
 })();

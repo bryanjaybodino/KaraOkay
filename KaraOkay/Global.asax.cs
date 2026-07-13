@@ -1,5 +1,4 @@
 ﻿using KaraOkay.BNetWebsocket;
-using KaraOkay.Functions;
 using System;
 using System.Net;
 using System.Web;
@@ -143,7 +142,8 @@ namespace KaraOkay
         {
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
             System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-            new Setup().StartWebsocket();
+            BNetWebsocket.Setup setup = new BNetWebsocket.Setup();
+            setup.StartWebsocket();
         }
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
