@@ -159,7 +159,6 @@ button {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-
 }
 
 .qr-overlay__label {
@@ -168,13 +167,13 @@ button {
     font-weight: 700;
     letter-spacing: .18em;
     text-transform: uppercase;
-    color:black;
+    color: black;
     text-shadow: 0 0 8px rgba(46, 230, 214, 0.4);
     background-color: white;
     border-radius: 5px;
     margin: 0;
-    padding-left:5px;
-    padding-right:5px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .qr-overlay__container {
@@ -183,7 +182,7 @@ button {
     justify-content: center;
     background: white;
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(46, 230, 214, 0.3); 
+    border: 1px solid rgba(46, 230, 214, 0.3);
     padding: 10px;
     box-shadow: 0 8px 32px rgba(255, 46, 136, 0.15), 0 0 24px rgba(46, 230, 214, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -700,13 +699,13 @@ button {
     display: none !important;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1280px) and (orientation: portrait) {
     .stage__main {
         grid-template-columns: 1fr;
     }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 900px) and (orientation: portrait) {
     .stage__header {
         flex-direction: column;
         align-items: flex-start;
