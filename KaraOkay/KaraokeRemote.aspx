@@ -40,29 +40,46 @@
 
             <div class="conn-status" id="connStatus" hidden></div>
 
-            <section class="now-panel">
-                <div class="eyebrow">Now Singing</div>
-                <div id="remoteNowPlaying">&mdash;</div>
-                <div class="transport">
-                    <button type="button" id="playBtn">&#9654; Play</button>
-                    <button type="button" id="pauseBtn">&#9208; Pause</button>
-                    <button type="button" id="skipBtn">&#9197; Skip</button>
-                </div>
-            </section>
+            <nav class="remote-tabs" id="remoteTabs">
+                <button type="button" class="remote-tabs__btn is-active" data-tab="queue">Now Playing</button>
+                <button type="button" class="remote-tabs__btn" data-tab="search">Search Song</button>
+                <button type="button" class="remote-tabs__btn" data-tab="mine">My Songs</button>
+            </nav>
 
-            <section class="search-panel">
-                <div class="eyebrow">Add a Song</div>
-                <div class="search-row">
-                    <input type="text" id="searchInput" placeholder="Search YouTube&hellip;" />
-                    <button type="button" id="searchBtn">Search</button>
-                </div>
-                <ul class="result-list" id="searchResults"></ul>
-            </section>
+            <div class="tab-panel" id="tabPanel-queue">
+                <section class="now-panel">
+                    <div class="eyebrow">Now Singing</div>
+                    <div id="remoteNowPlaying">&mdash;</div>
+                    <div class="transport">
+                        <button type="button" id="playBtn">&#9654; Play</button>
+                        <button type="button" id="pauseBtn">&#9208; Pause</button>
+                        <button type="button" id="skipBtn">&#9197; Skip</button>
+                    </div>
+                </section>
 
-            <section class="queue-panel-remote">
-                <div class="eyebrow">Reservations</div>
-                <ol class="queue-list" id="remoteQueueList"></ol>
-            </section>
+                <section class="queue-panel-remote">
+                    <div class="eyebrow">Reservations</div>
+                    <ol class="queue-list" id="remoteQueueList"></ol>
+                </section>
+            </div>
+
+            <div class="tab-panel" id="tabPanel-search" hidden>
+                <section class="search-panel">
+                    <div class="eyebrow">Add a Song</div>
+                    <div class="search-row">
+                        <input type="text" id="searchInput" placeholder="Search YouTube&hellip;" />
+                        <button type="button" id="searchBtn">Search</button>
+                    </div>
+                    <ul class="result-list" id="searchResults"></ul>
+                </section>
+            </div>
+
+            <div class="tab-panel" id="tabPanel-mine" hidden>
+                <section class="queue-panel-remote">
+                    <div class="eyebrow">My Songs</div>
+                    <ol class="queue-list" id="myQueueList"></ol>
+                </section>
+            </div>
         </div>
     </form>
 

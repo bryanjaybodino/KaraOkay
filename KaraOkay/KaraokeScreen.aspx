@@ -82,50 +82,6 @@
             </div>
 
         </div>
-
-        <script>
-            (function () {
-                var btn = document.getElementById('fullscreenBtn');
-                var stage = document.querySelector('.stage');
-                var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
-                var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
-
-                function isFullscreen() {
-                    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-                }
-
-                function updateIcon() {
-                    var fs = isFullscreen();
-                    expandIcon.hidden = fs;
-                    collapseIcon.hidden = !fs;
-                    btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
-                }
-
-                function requestFs(el) {
-                    if (el.requestFullscreen) return el.requestFullscreen();
-                    if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-                    if (el.msRequestFullscreen) return el.msRequestFullscreen();
-                }
-
-                function exitFs() {
-                    if (document.exitFullscreen) return document.exitFullscreen();
-                    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-                    if (document.msExitFullscreen) return document.msExitFullscreen();
-                }
-
-                btn.addEventListener('click', function () {
-                    if (isFullscreen()) {
-                        exitFs();
-                    } else {
-                        requestFs(stage || document.documentElement);
-                    }
-                });
-
-                document.addEventListener('fullscreenchange', updateIcon);
-                document.addEventListener('webkitfullscreenchange', updateIcon);
-                document.addEventListener('msfullscreenchange', updateIcon);
-            })();
-        </script>
     </form>
 </body>
 </html>

@@ -175,6 +175,29 @@
         joinView.hidden = false;
     });
 
+    /* ---- tabs ------------------------------------------------------------ */
+
+    var tabButtons = document.querySelectorAll(".remote-tabs__btn");
+    var tabPanels = {
+        queue: document.getElementById("tabPanel-queue"),
+        search: document.getElementById("tabPanel-search"),
+        mine: document.getElementById("tabPanel-mine")
+    };
+
+    Array.prototype.forEach.call(tabButtons, function (btn) {
+        btn.addEventListener("click", function () {
+            var target = btn.getAttribute("data-tab");
+
+            Array.prototype.forEach.call(tabButtons, function (b) {
+                b.classList.toggle("is-active", b === btn);
+            });
+
+            Object.keys(tabPanels).forEach(function (key) {
+                tabPanels[key].hidden = key !== target;
+            });
+        });
+    });
+
     /* ---- transport controls -------------------------------------------- */
 
     document.getElementById("playBtn").addEventListener("click", function () {
@@ -337,77 +360,104 @@
             nowEl.innerHTML = '\u2014<span class="rn-title">Waiting for the first song</span>';
         }
 
-        var list = document.getElementById("remoteQueueList");
-        list.innerHTML = "";
         var queue = lastState.queue || [];
 
-        if (queue.length === 0) {
+        renderQueueList(
+            document.getElementById("remoteQueueList"),
+            queue,
+            null,
+            "No reservations yet. Search above to add the first song!"
+        );
+
+        renderQueueList(
+            document.getElementById("myQueueList"),
+            queue,
+            function (item) { return item.singer === singerName; },
+            "You haven't reserved any songs yet \u2014 search above to add one!"
+        );
+    }
+
+    // Renders `queue` into `listEl`, keeping each item's real position in the
+    // overall queue (so numbers match what's shown on the TV screen) even
+    // when `filterFn` narrows down which items are actually displayed.
+    function renderQueueList(listEl, queue, filterFn, emptyText) {
+        listEl.innerHTML = "";
+
+        var entries = queue
+            .map(function (item, i) { return { item: item, position: i + 1 }; })
+            .filter(function (entry) { return !filterFn || filterFn(entry.item); });
+
+        if (entries.length === 0) {
             var empty = document.createElement("li");
             empty.className = "qempty";
-            empty.textContent = "No reservations yet. Search above to add the first song!";
-            list.appendChild(empty);
+            empty.textContent = emptyText;
+            listEl.appendChild(empty);
             return;
         }
 
-        queue.forEach(function (item, i) {
-            var mine = item.singer === singerName;
-            var li = document.createElement("li");
-            if (mine) li.classList.add("qmine");
-            // Force a column layout on this item regardless of whatever the
-            // stylesheet's default row layout is, so the actions row below
-            // always gets its own full-width line instead of being squeezed
-            // out of the same row as the thumbnail/title on narrow screens.
-            li.style.display = "flex";
-            li.style.flexWrap = "wrap";
-            li.style.alignItems = "center";
-
-            var topRow = document.createElement("div");
-            topRow.style.display = "flex";
-            topRow.style.alignItems = "center";
-            topRow.style.width = "100%";
-            topRow.innerHTML =
-                '<span class="qpos">' + (i + 1) + '</span>' +
-                '<img class="qthumb" src="' + item.thumb + '" alt="">' +
-                '<span class="qmeta">' +
-                '<span class="qtitle">' + escapeHtml(item.title) + '</span>' +
-                '<span class="qsinger">' + escapeHtml(item.singer || "Anonymous") + '</span>' +
-                '</span>';
-            li.appendChild(topRow);
-
-            if (mine) {
-                var actions = document.createElement("span");
-                actions.className = "qactions";
-                // Guaranteed-visible layout: its own full-width row with
-                // real spacing, independent of the stylesheet.
-                actions.style.display = "flex";
-                actions.style.width = "100%";
-                actions.style.gap = "8px";
-                actions.style.marginTop = "8px";
-                actions.style.flexWrap = "wrap";
-
-                var bumpBtn = document.createElement("button");
-                bumpBtn.type = "button";
-                bumpBtn.textContent = "Bump to next";
-                bumpBtn.style.flex = "1 1 auto";
-                bumpBtn.addEventListener("click", function () {
-                    socket.send({ action: "prioritize", id: item.id });
-                });
-
-                var cancelBtn = document.createElement("button");
-                cancelBtn.type = "button";
-                cancelBtn.textContent = "Cancel";
-                cancelBtn.style.flex = "1 1 auto";
-                cancelBtn.addEventListener("click", function () {
-                    socket.send({ action: "remove", id: item.id });
-                });
-
-                actions.appendChild(bumpBtn);
-                actions.appendChild(cancelBtn);
-                li.appendChild(actions);
-            }
-
-            list.appendChild(li);
+        entries.forEach(function (entry) {
+            listEl.appendChild(buildQueueItemEl(entry.item, entry.position));
         });
+    }
+
+    function buildQueueItemEl(item, position) {
+        var mine = item.singer === singerName;
+        var li = document.createElement("li");
+        if (mine) li.classList.add("qmine");
+        // Force a column layout on this item regardless of whatever the
+        // stylesheet's default row layout is, so the actions row below
+        // always gets its own full-width line instead of being squeezed
+        // out of the same row as the thumbnail/title on narrow screens.
+        li.style.display = "flex";
+        li.style.flexWrap = "wrap";
+        li.style.alignItems = "center";
+
+        var topRow = document.createElement("div");
+        topRow.style.display = "flex";
+        topRow.style.alignItems = "center";
+        topRow.style.width = "100%";
+        topRow.innerHTML =
+            '<span class="qpos">' + position + '</span>' +
+            '<img class="qthumb" src="' + item.thumb + '" alt="">' +
+            '<span class="qmeta">' +
+            '<span class="qtitle">' + escapeHtml(item.title) + '</span>' +
+            '<span class="qsinger">' + escapeHtml(item.singer || "Anonymous") + '</span>' +
+            '</span>';
+        li.appendChild(topRow);
+
+        if (mine) {
+            var actions = document.createElement("span");
+            actions.className = "qactions";
+            // Guaranteed-visible layout: its own full-width row with
+            // real spacing, independent of the stylesheet.
+            actions.style.display = "flex";
+            actions.style.width = "100%";
+            actions.style.gap = "8px";
+            actions.style.marginTop = "8px";
+            actions.style.flexWrap = "wrap";
+
+            var bumpBtn = document.createElement("button");
+            bumpBtn.type = "button";
+            bumpBtn.textContent = "Bump to next";
+            bumpBtn.style.flex = "1 1 auto";
+            bumpBtn.addEventListener("click", function () {
+                socket.send({ action: "prioritize", id: item.id });
+            });
+
+            var cancelBtn = document.createElement("button");
+            cancelBtn.type = "button";
+            cancelBtn.textContent = "Cancel";
+            cancelBtn.style.flex = "1 1 auto";
+            cancelBtn.addEventListener("click", function () {
+                socket.send({ action: "remove", id: item.id });
+            });
+
+            actions.appendChild(bumpBtn);
+            actions.appendChild(cancelBtn);
+            li.appendChild(actions);
+        }
+
+        return li;
     }
 
     function escapeHtml(s) {
