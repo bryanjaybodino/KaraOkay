@@ -91,6 +91,7 @@
     <Compile Include="Functions\IPAddressChecker.cs" />
     <Compile Include="Functions\MyCookies.cs" />
     <Compile Include="Functions\SecuredData.cs" />
+    <Compile Include="Functions\UniqueIpLogger.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

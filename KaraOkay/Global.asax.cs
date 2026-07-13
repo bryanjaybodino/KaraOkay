@@ -211,6 +211,7 @@ namespace KaraOkay
 
             AntiBurstRequest(ip);
             UrlAbuseRequest(ip);
+            UniqueIpLogger.Save(ip);
         }
         protected void Application_End(object sender, EventArgs e)
         {
