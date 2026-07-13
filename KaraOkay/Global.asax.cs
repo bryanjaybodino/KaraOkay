@@ -138,11 +138,13 @@ namespace KaraOkay
                 HttpContext.Current.ApplicationInstance.CompleteRequest();
             }
         }
+
+        private static BNetWebsocket.Setup setup;
         protected void Application_Start(object sender, EventArgs e)
         {
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
             System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-            BNetWebsocket.Setup setup = new BNetWebsocket.Setup();
+            setup = new BNetWebsocket.Setup();
             setup.StartWebsocket();
         }
         protected void Application_BeginRequest(object sender, EventArgs e)
@@ -215,18 +217,8 @@ namespace KaraOkay
         }
         protected void Application_End(object sender, EventArgs e)
         {
+            setup?.StopWebsocket();
         }
 
-        protected void Application_Error(object sender, EventArgs e)
-        {
-        }
-
-        protected void Session_Start(object sender, EventArgs e)
-        {
-        }
-
-        protected void Session_End(object sender, EventArgs e)
-        {
-        }
     }
 }
