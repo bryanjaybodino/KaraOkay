@@ -108,6 +108,7 @@
         }
     })();
 
+    var joinSpinner = document.getElementById("joinSpinner");
     joinBtn.addEventListener("click", function () {
         var room = roomInput.value.trim().toUpperCase();
         var name = nameInput.value.trim();
@@ -120,10 +121,17 @@
             joinError.textContent = "Tell us who's singing \u2014 enter a name.";
             return;
         }
+
         joinError.textContent = "";
+
+        // Show loading animation on button
+        joinBtn.disabled = true;
+        if (joinSpinner) joinSpinner.hidden = false;
+
         singerName = name;
         localStorage.setItem("karaokeSingerName", name);
         localStorage.setItem("karaokeRoomCode", room);
+
         joinRoom(room);
     });
 
@@ -133,6 +141,10 @@
 
         socket = new Karaoke.Socket(room);
         socket.onOpen = function () {
+            // Reset connect button state
+            joinBtn.disabled = false;
+            if (joinSpinner) joinSpinner.hidden = true;
+
             joinView.hidden = true;
             controlView.hidden = false;
             connStatus.hidden = true;
@@ -157,6 +169,9 @@
             setTimeout(function () { connStatus.hidden = true; }, 2500);
         };
         socket.onError = function () {
+            // Reset connect button state on error
+            joinBtn.disabled = false;
+            if (joinSpinner) joinSpinner.hidden = true;
             joinError.textContent = "Couldn't reach the party. Check the WebSocket server is running.";
         };
         socket.onMessage = function (msg) {
@@ -167,6 +182,26 @@
         };
         socket.connect();
     }
+
+
+    var volumeSlider = document.getElementById("volumeSlider");
+    var volumeValue = document.getElementById("volumeValue");
+
+    if (volumeSlider) {
+        volumeSlider.addEventListener("input", function () {
+            var level = parseInt(volumeSlider.value, 10);
+            if (volumeValue) volumeValue.textContent = level + "%";
+
+            if (socket) {
+                socket.send({
+                    action: "control",
+                    cmd: "volume",
+                    level: level
+                });
+            }
+        });
+    }
+
 
     document.getElementById("leaveBtn").addEventListener("click", function () {
         if (socket) socket.close();

@@ -192,7 +192,7 @@
                 break;
 
             case "control":
-                if (!playerReady) break;
+                if (!playerReady || !player) break;
                 if (msg.cmd === "play") {
                     player.playVideo();
                 }
@@ -202,6 +202,16 @@
                 else if (msg.cmd === "skip") {
                     player.pauseVideo();
                     playNext();
+                }
+                else if (msg.cmd === "volume") {
+                    if (typeof msg.level === "number") {
+                        player.setVolume(msg.level);
+                        if (msg.level === 0) {
+                            player.mute();
+                        } else if (player.isMuted()) {
+                            player.unMute();
+                        }
+                    }
                 }
                 break;
 

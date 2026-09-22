@@ -27,7 +27,10 @@
                 <input type="text" id="singerNameInput" maxlength="40" placeholder="e.g. Bryan Jay" />
             </div>
 
-            <button type="button" id="joinBtn">Connect</button>
+            <button type="button" id="joinBtn">
+                <span class="btn-text">Connect</span>
+                <span class="btn-spinner" id="joinSpinner" hidden>⏳</span>
+            </button>
             <div class="error" id="joinError"></div>
         </div>
 
@@ -54,6 +57,12 @@
                         <button type="button" id="playBtn">&#9654; Play</button>
                         <button type="button" id="pauseBtn">&#9208; Pause</button>
                         <button type="button" id="skipBtn">&#9197; Skip</button>
+                    </div>
+                    <!-- Volume Slider Control -->
+                    <div class="volume-control" style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                        <label for="volumeSlider" style="font-size: 0.9em; font-weight: bold;">🔊 Volume</label>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="100" style="flex: 1;" />
+                        <span id="volumeValue">100%</span>
                     </div>
                 </section>
 
