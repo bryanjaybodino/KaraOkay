@@ -276,29 +276,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     justify-content: center;
 }
 
-/* Signature element: chasing marquee lights around the stage frame */
-.marquee-border {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: var(--radius-lg);
-    z-index: 3;
-    background: repeating-linear-gradient(90deg, var(--pink) 0 10px, transparent 10px 26px) top / 200% 6px no-repeat, repeating-linear-gradient(90deg, var(--cyan) 0 10px, transparent 10px 26px) bottom / 200% 6px no-repeat, repeating-linear-gradient(0deg, var(--pink) 0 10px, transparent 10px 26px) left / 6px 200% no-repeat, repeating-linear-gradient(0deg, var(--cyan) 0 10px, transparent 10px 26px) right / 6px 200% no-repeat;
-    animation: chase 1.4s linear infinite;
-    opacity: .9;
-}
-
-@keyframes chase {
-    to {
-        background-position: 200% 0, -200% 0, 0 -200%, 0 200%;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .marquee-border {
-        animation: none;
-    }
-}
 
 #ytPlayer, #ytPlayer iframe {
     width: 100%;
