@@ -557,11 +557,13 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     }
 
 .link-btn {
-    background: transparent;
     color: var(--text-faint);
     font-size: 12px;
     text-decoration: underline;
-    padding: 4px;
+    padding: 7px;
+    text-decoration:none;
+    padding-left:15px;
+    padding-right:15px;
 }
 
 .now-panel, .search-panel, .queue-panel-remote {
@@ -808,6 +810,22 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     font-size: 13px;
     color: var(--text-muted, #A99FC9);
     max-width: 320px;
+}
+
+/* Highlight container border when reserved */
+.result-list li.is-reserved {
+    border: 2px solid #22c55e; /* Vibrant Green Accent */
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Reserved state button styling */
+.result-list button.is-reserved {
+    background-color: #22c55e;
+    color: #ffffff;
+    border-color: #22c55e;
+    cursor: default;
+    font-weight: bold;
 }
 
 /* ==========================================================================

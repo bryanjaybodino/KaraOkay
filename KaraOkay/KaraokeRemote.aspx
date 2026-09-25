@@ -28,8 +28,8 @@
             </div>
 
             <button type="button" id="joinBtn">
-                <span class="btn-text">Connect</span>
-                <span class="btn-spinner" id="joinSpinner" hidden>⏳</span>
+                <span class="btn-spinner" id="joinSpinner" hidden></span>
+                <span class="btn-text" id="joinBtnText">Connect</span>
             </button>
             <div class="error" id="joinError"></div>
         </div>

@@ -124,8 +124,10 @@
 
         joinError.textContent = "";
 
-        // Show loading animation on button
+        // Show loading spinner & update button text
         joinBtn.disabled = true;
+        var joinBtnText = document.getElementById("joinBtnText");
+        if (joinBtnText) joinBtnText.textContent = "Connecting\u2026";
         if (joinSpinner) joinSpinner.hidden = false;
 
         singerName = name;
@@ -375,7 +377,13 @@
                         title: title,
                         thumb: thumb
                     });
-                    reserveBtn.textContent = "Reserved!";
+
+                    // Update button text to check mark icon
+                    reserveBtn.innerHTML = "&#10003; Reserved";
+
+                    // Highlight list item and button border
+                    li.classList.add("is-reserved");
+                    reserveBtn.classList.add("is-reserved");
                 });
             });
 
