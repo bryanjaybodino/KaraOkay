@@ -241,7 +241,7 @@
         socket.send({ action: "control", cmd: "play" });
     });
     document.getElementById("pauseBtn").addEventListener("click", function () {
-        socket.send({ action: "control", cmd: "pause" });
+        socket.send({ action: "control", cmd: "pause", singer: singerName });
     });
     document.getElementById("skipBtn").addEventListener("click", function () {
         socket.send({ action: "control", cmd: "skip" });

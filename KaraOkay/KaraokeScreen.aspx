@@ -2,7 +2,7 @@
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"  oncontextmenu="return false;">
 <head runat="server">
     <meta charset="utf-8" />
     <title>Kara-Okay &mdash; Stage Screen</title>
@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <% Response.Write(KaraOkay.FileCssHelper.StyleSheetVersion("assets/css/style.css")); %>
 </head>
-<body>
+<body oncontextmenu="return false;">
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" EnableCdn="false" EnablePageMethods="true" EnablePartialRendering="true" AsyncPostBackTimeout="99999999" ScriptMode="Release" ValidateRequestMode="Enabled" EnableScriptLocalization="true" EnableScriptGlobalization="true" LoadScriptsBeforeUI="false" CompositeScript-ScriptMode="Release" CompositeScript-ResourceUICultures="Release" runat="server"></asp:ScriptManager>
         <div class="stage">
@@ -47,7 +47,7 @@
             <div class="stage__main">
                 <div class="player-frame" id="playerFrame">
                     <div class="marquee-border"></div>
-                    <div id="ytPlayer"></div>
+                    <div id="ytPlayer" class="iframe-blocker"></div>
                     <div class="idle-screen" id="idleScreen">
                         <div class="idle-screen__eq">
                             <span></span><span></span><span></span><span></span><span></span>
@@ -56,7 +56,8 @@
                     </div>
                     <div class="start-overlay" id="startOverlay">
                         <button type="button" class="start-overlay__button" id="startOverlayBtn">&#127908; Tap to Start the Party</button>
-                        <div class="start-overlay__hint">Browsers block autoplay with sound until the screen itself is tapped once &mdash; this only takes one tap for the whole party.</div>
+                        <div class="start-overlay__hint" id="startOverlayHint">Browsers block autoplay with sound until the screen itself is tapped once &mdash; this only takes one tap for the whole party.</div>
+                        <div class="start-overlay__paused-by" id="pausedByText" style="color: var(--gold); font-weight: bold; margin-top: 1vh;" hidden></div>
                     </div>
                     <!-- QR Code moved here as floating overlay -->
                     <div class="qr-overlay">

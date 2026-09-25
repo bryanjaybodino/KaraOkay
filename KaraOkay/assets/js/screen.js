@@ -79,16 +79,40 @@
 
     /* ---- one-time autoplay unlock -------------------------------------- */
 
+    var currentPausedBy = "";
+
+    function showPauseOverlay(isPaused, pausedBy) {
+        var overlay = document.getElementById("startOverlay");
+        var btn = document.getElementById("startOverlayBtn");
+        var hint = document.getElementById("startOverlayHint");
+        var pausedByEl = document.getElementById("pausedByText");
+
+        if (isPaused) {
+            btn.innerHTML = "&#9654; PAUSED - Tap to Resume";
+            if (hint) hint.textContent = "Playback is currently paused.";
+
+            if (pausedByEl) {
+                var name = pausedBy || currentPausedBy || "Someone";
+                pausedByEl.textContent = "Paused by " + name;
+                pausedByEl.hidden = false;
+            }
+            overlay.hidden = false;
+        } else {
+            overlay.hidden = true;
+            if (pausedByEl) pausedByEl.hidden = true;
+            currentPausedBy = "";
+        }
+    }
+
     (function wireStartOverlay() {
         var overlay = document.getElementById("startOverlay");
         var btn = document.getElementById("startOverlayBtn");
         btn.addEventListener("click", function () {
             audioUnlocked = true;
             overlay.hidden = true;
-            // If a song already loaded (or tried to) before this tap, it was
-            // very likely blocked — this click is a real user gesture, so
-            // kicking playVideo() now will actually start it.
-            if (playerReady && player && state.nowPlaying) player.playVideo();
+            if (playerReady && player && state.nowPlaying) {
+                player.playVideo();
+            }
         });
     })();
 
@@ -101,18 +125,22 @@
             events: {
                 onReady: function () {
                     playerReady = true;
-                    // If we restored a "now playing" song after a refresh, resume it.
                     if (state.nowPlaying) {
                         player.loadVideoById(state.nowPlaying.videoId);
                         if (audioUnlocked) player.playVideo();
                     }
                 },
                 onStateChange: function (e) {
-                    if (e.data === YT.PlayerState.ENDED) playNext();
+                    if (e.data === YT.PlayerState.ENDED) {
+                        showPauseOverlay(false);
+                        playNext();
+                    } else if (e.data === YT.PlayerState.PAUSED) {
+                        showPauseOverlay(true, currentPausedBy);
+                    } else if (e.data === YT.PlayerState.PLAYING) {
+                        showPauseOverlay(false);
+                    }
                 },
                 onError: function (e) {
-                    // 2 = bad video id, 5 = HTML5 player error, 100 = removed/private,
-                    // 101 & 150 = embedding disabled by the video owner.
                     handlePlaybackError(e.data);
                 }
             }
@@ -128,8 +156,12 @@
     /* ---- queue mechanics -------------------------------------------------- */
 
     function playNext() {
+        showPauseOverlay(false); // Clear any lingering pause overlays
         if (state.queue.length === 0) {
             state.nowPlaying = null;
+            if (playerReady && player && typeof player.stopVideo === "function") {
+                player.stopVideo();
+            }
             showIdle(true);
         } else {
             state.nowPlaying = state.queue.shift();
@@ -197,11 +229,13 @@
                     player.playVideo();
                 }
                 else if (msg.cmd === "pause") {
+                    currentPausedBy = msg.singer || "Someone";
                     player.pauseVideo();
+                    showPauseOverlay(true, currentPausedBy);
                 }
                 else if (msg.cmd === "skip") {
-                    player.pauseVideo();
-                    playNext();
+                    showPauseOverlay(false); // Explicitly hide overlay on skip
+                    playNext();              // Load and play the next video directly
                 }
                 else if (msg.cmd === "volume") {
                     if (typeof msg.level === "number") {
@@ -292,6 +326,7 @@
     };
 
     socket.onClose = function () {
+        stopHeartbeat(); // Pause heartbeat while disconnected
         connStatus.hidden = false;
         connStatus.className = "conn-status conn-status--reconnecting";
         connStatus.textContent = "Connection lost \u2014 reconnecting\u2026";
@@ -307,9 +342,8 @@
         connStatus.hidden = false;
         connStatus.className = "conn-status conn-status--connected";
         connStatus.textContent = "Back online!";
-        // Remotes may have missed updates while we were disconnected —
-        // push the current state out again now that we're back.
         broadcastState();
+        startHeartbeat(); // Ensure heartbeat resumes on reconnect
         setTimeout(function () { connStatus.hidden = true; }, 2500);
     };
 
@@ -317,6 +351,29 @@
         socket.connect();
         render();
         showIdle(!state.nowPlaying);
+        startHeartbeat(); // Start 1-minute heartbeat on startup
+    }
+
+    /* ---- Heartbeat Mechanism (Every 60 Seconds) ------------------------ */
+    var heartbeatInterval = null;
+
+    function startHeartbeat() {
+        stopHeartbeat();
+        heartbeatInterval = setInterval(function () {
+            if (socket) {
+                // Send a lightweight ping to keep WebSocket connection active
+                socket.send({ action: "ping", timestamp: Date.now() });
+                // Periodically re-broadcast state to keep remotes synced
+                broadcastState();
+            }
+        }, 60000); // 60,000 ms = 1 minute
+    }
+
+    function stopHeartbeat() {
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
     }
 
     if (document.readyState === "loading") {
