@@ -45,8 +45,8 @@
         try {
             new QRCode(qrContainer, {
                 text: remoteUrl,
-                width: 100,
-                height: 100,
+                width: 90,
+                height: 90,
                 correctLevel: QRCode.CorrectLevel.L,  // Lower error correction = simpler, faster to scan
                 useSVG: false,                        // Canvas renders faster & scans better than SVG
                 colorDark: "#000000",                 // Pure black for maximum contrast
