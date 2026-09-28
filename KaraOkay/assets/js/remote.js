@@ -575,6 +575,24 @@
         return li;
     }
 
+    /* ---- Live Reactions Handler ----------------------------------------- */
+
+    var reactionBtns = document.querySelectorAll(".reaction-btn");
+    Array.prototype.forEach.call(reactionBtns, function (btn) {
+        btn.addEventListener("click", function () {
+            var emoji = btn.getAttribute("data-reaction");
+            if (socket && emoji) {
+                socket.send({
+                    action: "reaction",
+                    type: emoji
+                });
+
+                // Subtle click animation feedback on phone
+                btn.style.transform = "scale(1.2)";
+                setTimeout(function () { btn.style.transform = "scale(1)"; }, 150);
+            }
+        });
+    });
     /* ---- Helpers & Utilities ------------------------------------------- */
 
     function escapeHtml(s) {

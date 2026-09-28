@@ -2,7 +2,7 @@
 
 
 <!DOCTYPE html>
-<html lang="en"  oncontextmenu="return false;">
+<html lang="en" oncontextmenu="return false;">
 <head runat="server">
     <meta charset="utf-8" />
     <title>Kara-Okay &mdash; Stage Screen</title>
@@ -48,6 +48,8 @@
                 <div class="player-frame" id="playerFrame">
                     <div class="marquee-border"></div>
                     <div id="ytPlayer" class="iframe-blocker"></div>
+                    <!-- Floating Reactions Overlay Container -->
+                    <div class="reaction-container" id="reactionContainer"></div>
                     <div class="idle-screen" id="idleScreen">
                         <div class="idle-screen__eq">
                             <span></span><span></span><span></span><span></span><span></span>

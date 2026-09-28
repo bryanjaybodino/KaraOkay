@@ -836,3 +836,51 @@ input, select, textarea {
         border-color: var(--gold);
         box-shadow: 0 0 8px var(--gold-glow);
     }
+
+
+/* ---- Floating Reaction Animations ----------------------------------- */
+
+.player-frame {
+    position: relative;
+    overflow: hidden;
+}
+
+.reaction-container {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    width: 120px;
+    height: 80%;
+    pointer-events: none;
+    z-index: 99;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.floating-reaction {
+    position: absolute;
+    bottom: 0;
+    font-size: 2.5rem;
+    user-select: none;
+    animation: floatUpAndFade 2.5s ease-out forwards;
+}
+
+@keyframes floatUpAndFade {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(0.6) rotate(0deg);
+    }
+
+    20% {
+        transform: translateY(-60px) scale(1.2) rotate(-10deg);
+    }
+
+    50% {
+        transform: translateY(-180px) scale(1) rotate(10deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-380px) scale(0.8) rotate(-5deg);
+    }
+}

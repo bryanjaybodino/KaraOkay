@@ -241,6 +241,12 @@
                 broadcastState();
                 break;
 
+            case "reaction":
+                if (msg.type) {
+                    spawnReaction(msg.type);
+                }
+                break;
+
             case "control":
                 if (!playerReady || !player) break;
                 if (msg.cmd === "play") {
@@ -434,6 +440,28 @@
         document.addEventListener('msfullscreenchange', updateIcon);
     }
 
+    /* ---- Live Reaction Floating Renderer -------------------------------- */
+    function spawnReaction(emoji) {
+        var container = document.getElementById("reactionContainer");
+        if (!container) return;
+
+        var reactionEl = document.createElement("div");
+        reactionEl.className = "floating-reaction";
+        reactionEl.textContent = emoji;
+
+        // Randomize slight horizontal position jitter for natural floating effect
+        var randomX = Math.floor(Math.random() * 60) - 30; // -30px to +30px
+        reactionEl.style.right = (20 + randomX) + "px";
+
+        container.appendChild(reactionEl);
+
+        // Clean up DOM element after animation ends
+        setTimeout(function () {
+            if (reactionEl && reactionEl.parentNode) {
+                reactionEl.parentNode.removeChild(reactionEl);
+            }
+        }, 2500);
+    }
     /* ---- App Initialization --------------------------------------------- */
 
     function init() {

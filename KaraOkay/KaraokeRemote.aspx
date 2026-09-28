@@ -72,7 +72,16 @@
                     <ol class="queue-list" id="remoteQueueList"></ol>
                 </section>
             </div>
-
+            <!-- Live Reactions Control Panel -->
+            <div class="reactions-panel" style="margin-top: 20px; text-align: center;">
+                <div class="eyebrow" style="margin-bottom: 8px;">Send Reaction</div>
+                <div class="reactions-bar" style="display: flex; justify-content: center; gap: 12px;">
+                    <button type="button" class="reaction-btn" data-reaction="👏" style="font-size: 1.6rem; background: var(--bg-card, #222); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 48px; height: 48px; cursor: pointer;">👏</button>
+                    <button type="button" class="reaction-btn" data-reaction="❤️" style="font-size: 1.6rem; background: var(--bg-card, #222); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 48px; height: 48px; cursor: pointer;">❤️</button>
+                    <button type="button" class="reaction-btn" data-reaction="😂" style="font-size: 1.6rem; background: var(--bg-card, #222); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 48px; height: 48px; cursor: pointer;">😂</button>
+                    <button type="button" class="reaction-btn" data-reaction="😢" style="font-size: 1.6rem; background: var(--bg-card, #222); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 48px; height: 48px; cursor: pointer;">😢</button>
+                </div>
+            </div>
             <div class="tab-panel" id="tabPanel-search" hidden>
                 <section class="search-panel">
                     <div class="eyebrow">Add a Song</div>
