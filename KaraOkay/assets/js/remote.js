@@ -735,16 +735,27 @@
             return;
         }
 
+        // 1. Guard against duplicate triggers if already processing or reserved
+        if (btnElement.disabled || btnElement.classList.contains("is-processing") || btnElement.classList.contains("is-reserved")) {
+            return;
+        }
+
+        // 2. Mark as processing immediately to lock out further clicks
         btnElement.disabled = true;
+        btnElement.classList.add("is-processing");
         btnElement.textContent = "Checking\u2026";
 
         testPlayability(songData.videoId, function (ok) {
+            btnElement.classList.remove("is-processing");
+
             if (!ok) {
                 btnElement.textContent = "Unavailable";
                 liElement.style.opacity = "0.5";
                 liElement.title = "This video can't be played here \u2014 try another.";
                 return;
             }
+
+            // 3. Send the reservation message ONCE
             socket.send({
                 action: "add",
                 singer: singerName,
@@ -753,6 +764,7 @@
                 thumb: songData.thumb
             });
 
+            // 4. Update UI to reserved state
             btnElement.innerHTML = "&#10003; Reserved";
             liElement.classList.add("is-reserved");
             btnElement.classList.add("is-reserved");
