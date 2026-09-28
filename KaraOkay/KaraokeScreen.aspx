@@ -1,6 +1,5 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" ViewStateMode="Disabled" EnableViewState="false" CodeBehind="KaraokeScreen.aspx.cs" Inherits="KaraOkay.KaraokeScreen" %>
 
-
 <!DOCTYPE html>
 <html lang="en" oncontextmenu="return false;">
 <head runat="server">
@@ -13,7 +12,7 @@
 <body oncontextmenu="return false;">
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" EnableCdn="false" EnablePageMethods="true" EnablePartialRendering="true" AsyncPostBackTimeout="99999999" ScriptMode="Release" ValidateRequestMode="Enabled" EnableScriptLocalization="true" EnableScriptGlobalization="true" LoadScriptsBeforeUI="false" CompositeScript-ScriptMode="Release" CompositeScript-ResourceUICultures="Release" runat="server"></asp:ScriptManager>
-        <div class="stage">
+        <div class="stage" id="stageContainer">
 
             <header class="stage__header">
                 <div class="stage__header-left">
@@ -58,6 +57,14 @@
                     </div>
                     <div class="marquee-border"></div>
                     <div id="ytPlayer" class="iframe-blocker"></div>
+
+                    <!-- Upcoming Song Pop-up Notification -->
+                    <div class="upcoming-popup" id="upcomingPopup" hidden>
+                        <div class="upcoming-popup__badge">UP NEXT</div>
+                        <div class="upcoming-popup__singer" id="upcomingSinger">Next Singer</div>
+                        <div class="upcoming-popup__title" id="upcomingTitle">Song Title</div>
+                    </div>
+
                     <!-- On-Screen Message Banner -->
                     <div class="banner-message" id="bannerMessage" hidden>
                         <div class="banner-message__sender" id="bannerSender">Bryan Jay</div>
@@ -85,7 +92,7 @@
                     </div>
                 </div>
 
-                <aside class="queue-panel">
+                <aside class="queue-panel" id="queuePanel">
                     <div class="now-singing">
                         <div class="eyebrow">Now Singing</div>
                         <div class="now-singing__name" id="nowSingerName">&mdash;</div>

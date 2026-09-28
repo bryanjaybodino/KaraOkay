@@ -999,3 +999,72 @@ input, select, textarea {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+/* ---- Fullscreen Layout Mode Options --------------------------------- */
+
+.stage.is-stage-fullscreen .queue-panel {
+    display: none !important;
+}
+
+.stage.is-stage-fullscreen .stage__main {
+    grid-template-columns: 1fr !important;
+}
+
+.stage.is-stage-fullscreen .stage__header {
+    display: none !important; /* Optional: Hides top room header for pure full video view */
+}
+
+/* ---- Upcoming Song Right Pop-up Notification ----------------------- */
+
+.upcoming-popup {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 15;
+    background: rgba(13, 7, 30, 0.92);
+    backdrop-filter: blur(16px);
+    border: 2px solid var(--cyan);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    min-width: 260px;
+    max-width: 380px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 20px var(--cyan-glow);
+    opacity: 0;
+    transform: translateX(100px) scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+    .upcoming-popup.is-visible {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+.upcoming-popup__badge {
+    font-family: var(--font-code);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .18em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.upcoming-popup__singer {
+    font-size: min(1.4vw, 18px);
+    font-weight: 800;
+    color: var(--gold);
+    text-shadow: 0 0 8px var(--gold-glow);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upcoming-popup__title {
+    font-size: min(1vw, 13px);
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}

@@ -1,20 +1,14 @@
 ﻿/* ==========================================================================
    Kara-Okay — Screen (Page 1)
-   This page is the authoritative owner of the queue: it applies every
-   action it receives, then re-broadcasts the resulting state so every
-   remote (and itself) stays in sync. It also drives the YouTube player
-   and auto-advances the queue when a video ends.
    ========================================================================== */
 
 (function () {
-    /* ---- Constants & State Storage --------------------------------------- */
-
     var STORAGE_ROOM_KEY = "karaokeScreenRoomCode";
     var STORAGE_STATE_KEY = "karaokeScreenState";
 
     var state = {
-        nowPlaying: null,   // { id, singer, videoId, title, thumb }
-        queue: []           // array of the same shape, in play order
+        nowPlaying: null,
+        queue: []
     };
 
     var socket = null;
@@ -24,17 +18,14 @@
     var currentPausedBy = "";
     var heartbeatInterval = null;
     var messageTimer = null;
+    var timeCheckInterval = null;
+    var isPopupShown = false;
 
-    /* ---- Storage Initialization & Room Setup ----------------------------- */
-
-    // Reuse this browser's existing room code if available to persist across reloads
     var roomCode = localStorage.getItem(STORAGE_ROOM_KEY);
     if (!roomCode) {
         roomCode = Karaoke.generateRoomCode();
         localStorage.setItem(STORAGE_ROOM_KEY, roomCode);
     }
-
-    /* ---- QR Code Generation ---------------------------------------------- */
 
     function generateQRCode() {
         let path = window.location.pathname;
@@ -47,10 +38,7 @@
             path += "/KaraokeRemote";
         }
 
-        const remoteUrl = window.location.origin +
-            path +
-            "?room=" + encodeURIComponent(roomCode);
-
+        const remoteUrl = window.location.origin + path + "?room=" + encodeURIComponent(roomCode);
         var qrContainer = document.getElementById("qrCode");
         if (!qrContainer) return;
 
@@ -65,7 +53,6 @@
                 colorLight: "#FFFFFF"
             });
         } catch (err) {
-            console.warn("QR Code generation failed:", err);
             qrContainer.innerHTML = '<div class="code-qr-error">QR unavailable</div>';
         }
     }
@@ -77,9 +64,7 @@
             var parsed = JSON.parse(saved);
             state.nowPlaying = parsed.nowPlaying || null;
             state.queue = parsed.queue || [];
-        } catch (err) {
-            // Ignore corrupt saved state and start fresh.
-        }
+        } catch (err) { }
     }
 
     function saveState() {
@@ -88,12 +73,8 @@
                 nowPlaying: state.nowPlaying,
                 queue: state.queue
             }));
-        } catch (err) {
-            // Storage full or restricted; skip persisting.
-        }
+        } catch (err) { }
     }
-
-    /* ---- Overlay & UI Controls ------------------------------------------- */
 
     function showPauseOverlay(isPaused, pausedBy) {
         var overlay = document.getElementById("startOverlay");
@@ -144,7 +125,14 @@
     window.onYouTubeIframeAPIReady = function () {
         player = new YT.Player("ytPlayer", {
             host: "https://www.youtube.com",
-            playerVars: { autoplay: 1, controls: 1, rel: 0, playsinline: 1 },
+            playerVars: {
+                autoplay: 1,
+                controls: 0, // Disable native YouTube controls & overlays
+                rel: 0,
+                playsinline: 1,
+                modestbranding: 1,
+                iv_load_policy: 3
+            },
             events: {
                 onReady: function () {
                     playerReady = true;
@@ -154,15 +142,19 @@
                     }
                 },
                 onStateChange: function (e) {
-                    if (e.data === YT.PlayerState.ENDED) {
+                    if (e.data === YT.PlayerState.PLAYING) {
+                        showPauseOverlay(false);
+                        startTimeCheck();
+                    } else if (e.data === YT.PlayerState.ENDED) {
+                        stopTimeCheck();
+                        hideUpcomingPopup();
                         showPauseOverlay(false);
                         var singer = state.nowPlaying ? state.nowPlaying.singer : "";
                         var title = state.nowPlaying ? state.nowPlaying.title : "";
                         showScoreAndAdvance(singer, title);
                     } else if (e.data === YT.PlayerState.PAUSED) {
+                        stopTimeCheck();
                         showPauseOverlay(true, currentPausedBy);
-                    } else if (e.data === YT.PlayerState.PLAYING) {
-                        showPauseOverlay(false);
                     }
                 },
                 onError: function (e) {
@@ -191,9 +183,63 @@
         }, 2200);
     }
 
+    /* ---- Upcoming Popup Trigger (Triggers 15s before song ends) ---------- */
+
+    function startTimeCheck() {
+        stopTimeCheck();
+        timeCheckInterval = setInterval(function () {
+            if (!player || typeof player.getDuration !== "function" || typeof player.getCurrentTime !== "function") return;
+
+            var duration = player.getDuration();
+            var currentTime = player.getCurrentTime();
+            var timeLeft = duration - currentTime;
+
+            // Trigger popup when 15 seconds remain in current song
+            if (timeLeft <= 15 && timeLeft > 0 && !isPopupShown && state.queue.length > 0) {
+                showUpcomingPopup();
+            }
+        }, 1000);
+    }
+
+    function stopTimeCheck() {
+        if (timeCheckInterval) {
+            clearInterval(timeCheckInterval);
+            timeCheckInterval = null;
+        }
+    }
+
+    function showUpcomingPopup() {
+        var popup = document.getElementById("upcomingPopup");
+        var singerEl = document.getElementById("upcomingSinger");
+        var titleEl = document.getElementById("upcomingTitle");
+
+        if (!popup || state.queue.length === 0) return;
+
+        var nextSong = state.queue[0];
+        if (singerEl) singerEl.textContent = nextSong.singer || "Anonymous";
+        if (titleEl) titleEl.textContent = nextSong.title;
+
+        popup.hidden = false;
+        void popup.offsetWidth;
+        popup.classList.add("is-visible");
+        isPopupShown = true;
+    }
+
+    function hideUpcomingPopup() {
+        var popup = document.getElementById("upcomingPopup");
+        if (!popup) return;
+
+        popup.classList.remove("is-visible");
+        setTimeout(function () {
+            popup.hidden = true;
+        }, 400);
+        isPopupShown = false;
+    }
+
     /* ---- Queue Mechanics & Actions -------------------------------------- */
 
     function playNext() {
+        hideUpcomingPopup();
         showPauseOverlay(false);
         if (state.queue.length === 0) {
             state.nowPlaying = null;
@@ -225,7 +271,7 @@
 
         banner.hidden = false;
         banner.classList.remove("is-visible");
-        void banner.offsetWidth; // Force CSS reflow to restart animation
+        void banner.offsetWidth;
         banner.classList.add("is-visible");
 
         if (messageTimer) clearTimeout(messageTimer);
@@ -233,8 +279,8 @@
             banner.classList.remove("is-visible");
             setTimeout(function () {
                 banner.hidden = true;
-            }, 400); // Wait for fade-out transition
-        }, 6000); // Display on screen for 6 seconds
+            }, 400);
+        }, 6000);
     }
 
     function applyAction(msg) {
@@ -364,8 +410,6 @@
         socket.connect();
     }
 
-    /* ---- Heartbeat Mechanism -------------------------------------------- */
-
     function startHeartbeat() {
         stopHeartbeat();
         heartbeatInterval = setInterval(function () {
@@ -382,8 +426,6 @@
             heartbeatInterval = null;
         }
     }
-
-    /* ---- Render UI ------------------------------------------------------- */
 
     function render() {
         var nameEl = document.getElementById("nowSingerName");
@@ -431,8 +473,8 @@
 
     function initFullscreenControls() {
         var btn = document.getElementById('fullscreenBtn');
-        var stage = document.querySelector('.stage');
-        if (!btn) return;
+        var stage = document.getElementById('stageContainer');
+        if (!btn || !stage) return;
 
         var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
         var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
@@ -446,6 +488,13 @@
             if (expandIcon) expandIcon.hidden = fs;
             if (collapseIcon) collapseIcon.hidden = !fs;
             btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
+
+            // Toggle CSS fullscreen class to expand player and hide right panel
+            if (fs) {
+                stage.classList.add('is-stage-fullscreen');
+            } else {
+                stage.classList.remove('is-stage-fullscreen');
+            }
         }
 
         function requestFs(el) {
@@ -473,7 +522,6 @@
         document.addEventListener('msfullscreenchange', updateIcon);
     }
 
-    /* ---- Live Reaction Floating Renderer -------------------------------- */
     function spawnReaction(emoji) {
         var container = document.getElementById("reactionContainer");
         if (!container) return;
@@ -482,20 +530,17 @@
         reactionEl.className = "floating-reaction";
         reactionEl.textContent = emoji;
 
-        // Randomize slight horizontal position jitter for natural floating effect
-        var randomX = Math.floor(Math.random() * 60) - 30; // -30px to +30px
+        var randomX = Math.floor(Math.random() * 60) - 30;
         reactionEl.style.right = (20 + randomX) + "px";
 
         container.appendChild(reactionEl);
 
-        // Clean up DOM element after animation ends
         setTimeout(function () {
             if (reactionEl && reactionEl.parentNode) {
                 reactionEl.parentNode.removeChild(reactionEl);
             }
         }, 2500);
     }
-    /* ---- Score Calculation & Overlay ------------------------------------- */
 
     var scoreTimer = null;
 
@@ -519,7 +564,6 @@
             return;
         }
 
-        // Generate random score weighted towards higher fun scores (70–100)
         var randomScore = Math.floor(Math.random() * 31) + 70;
 
         singerEl.textContent = lastSinger || "Anonymous";
@@ -528,7 +572,7 @@
         ratingEl.textContent = getRatingText(randomScore);
 
         overlay.hidden = false;
-        void overlay.offsetWidth; // Force CSS reflow
+        void overlay.offsetWidth;
         overlay.classList.add("is-visible");
 
         if (scoreTimer) clearTimeout(scoreTimer);
@@ -537,10 +581,9 @@
             setTimeout(function () {
                 overlay.hidden = true;
                 playNext();
-            }, 400); // Wait for fade out
-        }, 5000); // Display score for 5 seconds
+            }, 400);
+        }, 5000);
     }
-    /* ---- App Initialization --------------------------------------------- */
 
     function init() {
         var roomCodeEl = document.getElementById("roomCode");
