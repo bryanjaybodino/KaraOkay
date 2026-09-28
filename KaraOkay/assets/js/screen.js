@@ -131,12 +131,16 @@
         player = new YT.Player("ytPlayer", {
             host: "https://www.youtube.com",
             playerVars: {
-                autoplay: 1,
-                controls: 0,
-                rel: 0,
-                playsinline: 1,
-                modestbranding: 1,
-                iv_load_policy: 3
+                'autoplay': 1,
+                'controls': 0,           // Hides player controls & YouTube logo on bottom bar
+                'rel': 0,                // Restricts related videos to the same channel when video ends
+                'cc_load_policy': 0,     // Disables captions by default
+                'cc_lang_pref': 'none',  // Prevents auto-selecting a caption language
+                'iv_load_policy': 3,     // Hides video annotations and pop-up cards (3 = hide, 0 is invalid)
+                'modestbranding': 1,     // Removes YouTube logo from control bar (where applicable)
+                'disablekb': 1,          // Disables keyboard shortcuts on player
+                'fs': 0,                 // Hides native fullscreen button
+                'playsinline': 1
             },
             events: {
                 onReady: function () {
@@ -291,6 +295,7 @@
     }
 
     /* ---- Fullscreen Controls -------------------------------------------- */
+    /* ---- Fullscreen Controls -------------------------------------------- */
     function initFullscreenControls() {
         var btn = document.getElementById('fullscreenBtn');
         var stage = document.getElementById('stageContainer');
@@ -307,12 +312,25 @@
             var fs = isFullscreen();
             if (expandIcon) expandIcon.hidden = fs;
             if (collapseIcon) collapseIcon.hidden = !fs;
-            btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
 
             if (fs) {
                 stage.classList.add('is-stage-fullscreen');
+
+                // Strip title attributes across all child elements to disable browser tooltips
+                stage.querySelectorAll('[title]').forEach(function (el) {
+                    el.setAttribute('data-original-title', el.getAttribute('title'));
+                    el.removeAttribute('title');
+                });
             } else {
                 stage.classList.remove('is-stage-fullscreen');
+
+                // Restore title attributes when exiting full screen
+                stage.querySelectorAll('[data-original-title]').forEach(function (el) {
+                    el.setAttribute('title', el.getAttribute('data-original-title'));
+                    el.removeAttribute('data-original-title');
+                });
+
+                btn.title = 'Toggle fullscreen';
             }
         }
 
@@ -514,6 +532,7 @@
     }
 
     function render() {
+        // 1. Update Currently Playing (if elements exist)
         var nameEl = document.getElementById("nowSingerName");
         var titleEl = document.getElementById("nowSongTitle");
         if (state.nowPlaying) {
@@ -524,29 +543,52 @@
             if (titleEl) titleEl.textContent = "Nothing yet";
         }
 
+        // 2. Update Featured Upcoming Song Card
+        var upcomingThumb = document.getElementById("upcomingThumbnail");
+        var upcomingTitle = document.getElementById("upcomingSongTitle");
+        var upcomingSinger = document.getElementById("upcomingSingerName");
+
+        if (state.queue.length > 0) {
+            var next = state.queue[0];
+            if (upcomingThumb) upcomingThumb.src = next.thumb || "https://via.placeholder.com/600x340";
+            if (upcomingTitle) upcomingTitle.textContent = next.title || "Untitled";
+            if (upcomingSinger) upcomingSinger.textContent = next.singer || "Anonymous";
+        } else {
+            if (upcomingThumb) upcomingThumb.src = "https://via.placeholder.com/600x340";
+            if (upcomingTitle) upcomingTitle.textContent = "Nothing scheduled";
+            if (upcomingSinger) upcomingSinger.textContent = "\u2014";
+        }
+
+        // 3. Render Rest of the Queue (Items after index 0)
         var list = document.getElementById("queueList");
         if (!list) return;
 
         list.innerHTML = "";
-        if (state.queue.length === 0) {
+
+        // If queue is empty or only has 1 item (which is already displayed in Up Next card)
+        if (state.queue.length <= 1) {
             var li = document.createElement("li");
             li.className = "qempty";
-            li.textContent = "No reservations yet \u2014 join on your phone to add a song.";
+            li.textContent = state.queue.length === 0
+                ? "No reservations yet \u2014 join on your phone to add a song."
+                : "No further songs in queue.";
             list.appendChild(li);
             return;
         }
 
-        state.queue.forEach(function (item, i) {
-            var li = document.createElement("li");
-            li.innerHTML =
-                '<span class="qpos">' + (i + 1) + '</span>' +
-                '<img class="qthumb" src="' + item.thumb + '" alt="">' +
+        // Render remaining queue items (index 1 onwards)
+        for (var i = 1; i < state.queue.length; i++) {
+            var item = state.queue[i];
+            var itemLi = document.createElement("li");
+            itemLi.innerHTML =
+                '<span class="qpos">' + i + '</span>' +
+                '<img class="qthumb" src="' + (item.thumb || "") + '" alt="">' +
                 '<span class="qmeta">' +
                 '<span class="qtitle">' + escapeHtml(item.title) + '</span>' +
                 '<span class="qsinger">' + escapeHtml(item.singer || "Anonymous") + '</span>' +
                 '</span>';
-            list.appendChild(li);
-        });
+            list.appendChild(itemLi);
+        }
     }
 
     function escapeHtml(s) {

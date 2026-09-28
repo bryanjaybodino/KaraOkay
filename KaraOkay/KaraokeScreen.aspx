@@ -93,15 +93,32 @@
                 </div>
 
                 <aside class="queue-panel" id="queuePanel">
-                    <div class="now-singing">
-                        <div class="eyebrow">Now Singing</div>
-                        <div class="now-singing__name" id="nowSingerName">&mdash;</div>
-                        <div class="now-singing__title" id="nowSongTitle">Nothing yet</div>
+                    <!-- Upcoming Song Card with Large Thumbnail Preview -->
+                    <div class="upcoming-song">
+                        <div class="upcoming-song__badge">
+                            <span class="pulse-dot"></span>UPCOMING SONG
+                        </div>
+
+                        <div class="upcoming-song__thumbnail-container">
+                            <img
+                                src="https://via.placeholder.com/600x340"
+                                alt="Song Thumbnail"
+                                class="upcoming-song__thumbnail"
+                                id="upcomingThumbnail" />
+                        </div>
+
+                        <div class="upcoming-song__details">
+                            <div class="upcoming-song__title" id="upcomingSongTitle">Nothing scheduled</div>
+                            <div class="upcoming-song__singer" id="upcomingSingerName">&mdash;</div>
+                        </div>
                     </div>
 
+                    <!-- Rest of the Queue -->
                     <div class="up-next">
-                        <div class="eyebrow">Up Next</div>
-                        <ol class="queue-list" id="queueList"></ol>
+                        <div class="eyebrow">Queue List</div>
+                        <ol class="queue-list" id="queueList">
+                            <!-- Queue items will be rendered here dynamically -->
+                        </ol>
                     </div>
                 </aside>
             </div>

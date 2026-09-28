@@ -86,6 +86,9 @@ button {
 input, select, textarea {
     font-size: 16px;
 }
+#roomCodeInput {
+    text-transform: uppercase;
+}
 
 /* ==========================================================================
    STAGE / TV SCREEN — ALWAYS LOCKED SIDE-BY-SIDE
@@ -1430,3 +1433,237 @@ input, select, textarea {
     max-height: 240px;
     overflow-y: auto;
 }
+
+/* ---- Fullscreen Layout Mode Options --------------------------------- */
+
+.stage.is-stage-fullscreen .queue-panel {
+    display: none !important;
+}
+
+.stage.is-stage-fullscreen .stage__main {
+    grid-template-columns: 1fr !important;
+}
+
+/* Hides top room header for pure full-video view */
+.stage.is-stage-fullscreen .stage__header {
+    display: none !important;
+}
+
+/* Hides the mouse cursor completely on full screen */
+.stage.is-stage-fullscreen,
+.stage.is-stage-fullscreen * {
+    cursor: none !important;
+}
+
+
+/* ---- 1. Container Grid Layout Fix ---- */
+.stage__main {
+    display: grid;
+
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Ensure video container scales smoothly */
+.stage__video-area,
+.stage__content {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    min-width: 0;
+}
+
+/* ---- 2. Queue Panel Responsive Layout ---- */
+.queue-panel {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 1.5vw, 20px);
+    color: #ffffff;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ---- 3. Upcoming Featured Container & Badge ---- */
+.upcoming-song {
+    background: linear-gradient(135deg, rgba(0, 180, 216, 0.15) 0%, rgba(114, 9, 183, 0.15) 100%);
+    border: 1px solid rgba(0, 180, 216, 0.35);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.36);
+    border-radius: 16px;
+    padding: clamp(12px, 1.2vw, 16px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.upcoming-song__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: clamp(0.65rem, 0.8vw, 0.75rem);
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #00b4d8;
+    text-transform: uppercase;
+    background: rgba(0, 180, 216, 0.12);
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #00b4d8;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00b4d8;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 180, 216, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(0, 180, 216, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 180, 216, 0);
+    }
+}
+
+.upcoming-song__thumbnail-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    margin-bottom: 10px;
+}
+
+.upcoming-song__thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.upcoming-song__details {
+    width: 100%;
+}
+
+.upcoming-song__title {
+    font-size: clamp(1rem, 1.4vw, 1.3rem);
+    font-weight: 800;
+    line-height: 1.25;
+    color: #ffffff;
+    /* Multiline line-clamp (Maximum 2 lines with ellipsis) */
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+.upcoming-song__singer {
+    font-size: clamp(0.85rem, 1vw, 1rem);
+    font-weight: 500;
+    color: var(--pink);
+    margin-top: 4px;
+    /* Single line truncation */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- 4. Queue List & Empty State ---- */
+.eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+
+.up-next {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.queue-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+    /* Chrome, Safari, and Opera */
+    .queue-list::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
+        background: transparent;
+    }
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: clamp(8px, 0.9vw, 12px);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+}
+
+.queue-item__index {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    min-width: 18px;
+}
+
+.queue-item__info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.queue-item__name {
+    font-size: clamp(0.85rem, 0.9vw, 0.95rem);
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-item__title {
+    font-size: clamp(0.75rem, 0.8vw, 0.82rem);
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.qempty {
+    padding: 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85rem;
+}
+
