@@ -129,9 +129,22 @@
                 </section>
             </div>
             <div class="tab-panel" id="tabPanel-favs" hidden>
-                <section class="queue-panel-remote">
-                    <div class="eyebrow">My Favorites</div>
-                    <ul class="result-list" id="favsList"></ul>
+                <section class="search-panel">
+                    <div class="search-header">
+                        <div class="eyebrow">My Favorites</div>
+                        <!-- View Toggle Switcher for Favorites -->
+                        <div class="layout-toggle" id="favsLayoutToggle">
+                            <button type="button" class="layout-btn" data-layout="list" title="List View">&#9776; List</button>
+                            <button type="button" class="layout-btn is-active" data-layout="grid" title="Grid View">&#8862; Grid</button>
+                        </div>
+                    </div>
+                    <!-- Search Input within Favorites -->
+                    <div class="search-row-container">
+                        <div class="search-row">
+                            <input type="text" id="favsSearchInput" placeholder="Search in favorites&hellip;" autocomplete="off" />
+                        </div>
+                    </div>
+                    <ul class="result-list view-grid" id="favsList"></ul>
                 </section>
             </div>
         </div>

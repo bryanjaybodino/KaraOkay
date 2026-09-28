@@ -422,6 +422,7 @@
     /* ---- Render Helpers & UI Views -------------------------------------- */
 
     var currentSearchLayout = localStorage.getItem("karaokeSearchLayout") || "grid";
+    var currentFavsLayout = localStorage.getItem("karaokeFavsLayout") || "grid";
 
     function applySearchLayout(layout) {
         currentSearchLayout = layout;
@@ -439,11 +440,34 @@
         });
     }
 
+    function applyFavsLayout(layout) {
+        currentFavsLayout = layout;
+        localStorage.setItem("karaokeFavsLayout", layout);
+
+        var favsListEl = document.getElementById("favsList");
+        if (favsListEl) {
+            favsListEl.classList.toggle("view-grid", layout === "grid");
+            favsListEl.classList.toggle("view-list", layout === "list");
+        }
+
+        var toggleBtns = document.querySelectorAll("#favsLayoutToggle .layout-btn");
+        Array.prototype.forEach.call(toggleBtns, function (btn) {
+            btn.classList.toggle("is-active", btn.getAttribute("data-layout") === layout);
+        });
+    }
+
     // Bind layout toggle buttons
     var layoutBtns = document.querySelectorAll("#searchLayoutToggle .layout-btn");
     Array.prototype.forEach.call(layoutBtns, function (btn) {
         btn.addEventListener("click", function () {
             applySearchLayout(btn.getAttribute("data-layout"));
+        });
+    });
+
+    var favsLayoutBtns = document.querySelectorAll("#favsLayoutToggle .layout-btn");
+    Array.prototype.forEach.call(favsLayoutBtns, function (btn) {
+        btn.addEventListener("click", function () {
+            applyFavsLayout(btn.getAttribute("data-layout"));
         });
     });
 
@@ -623,31 +647,62 @@
         }
     }
 
+    var favsSearchInput = document.getElementById("favsSearchInput");
+    if (favsSearchInput) {
+        favsSearchInput.addEventListener("input", function () {
+            renderFavorites();
+        });
+    }
+
     function renderFavorites() {
         var favsList = document.getElementById("favsList");
         if (!favsList) return;
 
         favsList.innerHTML = "";
+        applyFavsLayout(currentFavsLayout);
+
         var favs = getFavorites();
+        var query = favsSearchInput ? favsSearchInput.value.trim().toLowerCase() : "";
+
+        if (query) {
+            favs = favs.filter(function (item) {
+                var title = (item.title || "").toLowerCase();
+                var channel = (item.channel || "").toLowerCase();
+                return title.indexOf(query) !== -1 || channel.indexOf(query) !== -1;
+            });
+        }
 
         if (favs.length === 0) {
-            favsList.innerHTML = '<li class="qempty">No favorites saved yet. Star songs in search to save them!</li>';
+            favsList.innerHTML = query
+                ? '<li class="qempty">No matching favorites found.</li>'
+                : '<li class="qempty">No favorites saved yet. Star songs in search to save them!</li>';
             return;
         }
 
         favs.forEach(function (item) {
             var li = document.createElement("li");
+            li.setAttribute("data-video-id", item.videoId);
+            li.className = "search-card";
+
             li.innerHTML =
-                '<img src="' + item.thumb + '" alt="">' +
+                '<div class="thumb-wrapper">' +
+                '<img src="' + item.thumb + '" alt="" loading="lazy">' +
+                '<button type="button" class="fav-btn is-fav" title="Remove Favorite">&#9733;</button>' +
+                '</div>' +
                 '<span class="rmeta">' +
-                '<span class="rtitle">' + escapeHtml(item.title) + '</span>' +
+                '<span class="rtitle" title="' + escapeHtml(item.title) + '">' + escapeHtml(item.title) + '</span>' +
                 '<span class="rchannel">' + escapeHtml(item.channel || "") + '</span>' +
                 '</span>' +
-                '<button type="button" class="fav-btn is-fav" title="Remove Favorite" style="padding: 8px; margin-right: 4px;">&#9733;</button>' +
+                '<button type="button" class="list-fav-btn is-fav" title="Remove Favorite">&#9733;</button>' +
                 '<button type="button" class="reserve-btn">Reserve</button>';
 
             var favBtn = li.querySelector(".fav-btn");
             favBtn.addEventListener("click", function () {
+                toggleFavorite(item);
+            });
+
+            var listFavBtn = li.querySelector(".list-fav-btn");
+            listFavBtn.addEventListener("click", function () {
                 toggleFavorite(item);
             });
 
