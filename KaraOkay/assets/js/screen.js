@@ -156,7 +156,9 @@
                 onStateChange: function (e) {
                     if (e.data === YT.PlayerState.ENDED) {
                         showPauseOverlay(false);
-                        playNext();
+                        var singer = state.nowPlaying ? state.nowPlaying.singer : "";
+                        var title = state.nowPlaying ? state.nowPlaying.title : "";
+                        showScoreAndAdvance(singer, title);
                     } else if (e.data === YT.PlayerState.PAUSED) {
                         showPauseOverlay(true, currentPausedBy);
                     } else if (e.data === YT.PlayerState.PLAYING) {
@@ -493,7 +495,51 @@
             }
         }, 2500);
     }
+    /* ---- Score Calculation & Overlay ------------------------------------- */
 
+    var scoreTimer = null;
+
+    function getRatingText(score) {
+        if (score >= 98) return "👑 LEGENDARY SINGER!";
+        if (score >= 93) return "🔥 SUPERSTAR!";
+        if (score >= 85) return "🎤 GREAT JOB!";
+        if (score >= 75) return "👍 NICE TRY!";
+        return "😅 KEEP PRACTICING!";
+    }
+
+    function showScoreAndAdvance(lastSinger, lastTitle) {
+        var overlay = document.getElementById("scoreOverlay");
+        var singerEl = document.getElementById("scoreSinger");
+        var titleEl = document.getElementById("scoreTitle");
+        var numberEl = document.getElementById("scoreNumber");
+        var ratingEl = document.getElementById("scoreRating");
+
+        if (!overlay || !lastSinger) {
+            playNext();
+            return;
+        }
+
+        // Generate random score weighted towards higher fun scores (70–100)
+        var randomScore = Math.floor(Math.random() * 31) + 70;
+
+        singerEl.textContent = lastSinger || "Anonymous";
+        titleEl.textContent = lastTitle || "";
+        numberEl.textContent = randomScore;
+        ratingEl.textContent = getRatingText(randomScore);
+
+        overlay.hidden = false;
+        void overlay.offsetWidth; // Force CSS reflow
+        overlay.classList.add("is-visible");
+
+        if (scoreTimer) clearTimeout(scoreTimer);
+        scoreTimer = setTimeout(function () {
+            overlay.classList.remove("is-visible");
+            setTimeout(function () {
+                overlay.hidden = true;
+                playNext();
+            }, 400); // Wait for fade out
+        }, 5000); // Display score for 5 seconds
+    }
     /* ---- App Initialization --------------------------------------------- */
 
     function init() {

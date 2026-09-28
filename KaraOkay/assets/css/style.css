@@ -923,3 +923,79 @@ input, select, textarea {
         transform: translateY(-380px) scale(0.8) rotate(-5deg);
     }
 }
+
+
+/* ---- Score Card Overlay ----------------------------------------------- */
+
+.score-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 11;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 5, 24, 0.92);
+    backdrop-filter: blur(16px);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+    .score-overlay.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+.score-card {
+    background: var(--bg-panel-raised);
+    border: 2px solid var(--pink);
+    border-radius: var(--radius-lg);
+    padding: min(3vw, 4vh) min(4vw, 5vh);
+    box-shadow: 0 0 30px var(--pink-glow), inset 0 0 15px rgba(255, 46, 136, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5vh;
+    max-width: 80%;
+    transform: scale(0.8);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.score-overlay.is-visible .score-card {
+    transform: scale(1);
+}
+
+.score-card__singer {
+    font-size: min(2vw, 3vh);
+    font-weight: 800;
+    color: var(--cyan);
+    text-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.score-card__title {
+    font-size: min(1.2vw, 1.8vh);
+    color: var(--text-muted);
+}
+
+.score-card__number {
+    font-family: var(--font-display);
+    font-size: min(7vw, 10vh);
+    line-height: 1;
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold-glow);
+    margin: 1vh 0;
+}
+
+.score-card__rating {
+    font-family: var(--font-code);
+    font-size: min(2vw, 2.8vh);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #ffffff;
+    background: linear-gradient(90deg, var(--pink), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

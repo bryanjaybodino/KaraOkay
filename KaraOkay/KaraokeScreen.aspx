@@ -46,6 +46,16 @@
 
             <div class="stage__main">
                 <div class="player-frame" id="playerFrame">
+                    <!-- Singer Score Overlay -->
+                    <div class="score-overlay" id="scoreOverlay" hidden>
+                        <div class="score-card">
+                            <div class="eyebrow">PERFORMANCE SCORE</div>
+                            <div class="score-card__singer" id="scoreSinger">Bryan Jay</div>
+                            <div class="score-card__title" id="scoreTitle">Song Title</div>
+                            <div class="score-card__number" id="scoreNumber">98</div>
+                            <div class="score-card__rating" id="scoreRating">LEGENDARY!</div>
+                        </div>
+                    </div>
                     <div class="marquee-border"></div>
                     <div id="ytPlayer" class="iframe-blocker"></div>
                     <!-- On-Screen Message Banner -->
