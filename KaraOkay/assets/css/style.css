@@ -1280,6 +1280,30 @@ input, select, textarea {
         white-space: nowrap;
     }
 
+        .result-list.view-grid .reserve-btn.is-reserved {
+            background: var(--green);
+            color: #ffffff;
+            border-color: var(--green);
+            cursor: default;
+            font-weight: 800;
+        }
+    /* Reserved State — Grid View */
+    .result-list.view-grid .search-card.is-reserved {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        border-color: var(--green);
+        box-shadow: 0 0 12px var(--green-glow);
+    }
+
+/* Reserved State — List View */
+.result-list.view-list .search-card.is-reserved {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-color: var(--green);
+    box-shadow: 0 0 12px var(--green-glow);
+}
 
 /* List View (Secondary Mode) */
 .result-list.view-list {

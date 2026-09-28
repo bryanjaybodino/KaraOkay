@@ -345,6 +345,7 @@
     });
 
     function runSearch() {
+        hideAutocomplete();
         var query = searchInput.value.trim();
         if (!query) {
             searchResults.innerHTML = '<li class="qempty">Enter a song title or artist name.</li>';
