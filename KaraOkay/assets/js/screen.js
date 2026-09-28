@@ -7,26 +7,35 @@
    ========================================================================== */
 
 (function () {
+    /* ---- Constants & State Storage --------------------------------------- */
+
     var STORAGE_ROOM_KEY = "karaokeScreenRoomCode";
     var STORAGE_STATE_KEY = "karaokeScreenState";
 
     var state = {
         nowPlaying: null,   // { id, singer, videoId, title, thumb }
-        queue: []            // array of the same shape, in play order
+        queue: []           // array of the same shape, in play order
     };
 
-    // Reuse this browser's existing room code if we have one, so refreshing
-    // the screen doesn't hand everyone a new code mid-party. A different
-    // browser/device (or cleared storage) will still get a fresh code.
+    var socket = null;
+    var player = null;
+    var playerReady = false;
+    var audioUnlocked = false;
+    var currentPausedBy = "";
+    var heartbeatInterval = null;
+
+    /* ---- Storage Initialization & Room Setup ----------------------------- */
+
+    // Reuse this browser's existing room code if available to persist across reloads
     var roomCode = localStorage.getItem(STORAGE_ROOM_KEY);
     if (!roomCode) {
         roomCode = Karaoke.generateRoomCode();
         localStorage.setItem(STORAGE_ROOM_KEY, roomCode);
     }
-    document.getElementById("roomCode").textContent = roomCode;
 
-    // Generate QR code pointing to the remote page with room code as query param
-    (function generateQRCode() {
+    /* ---- QR Code Generation ---------------------------------------------- */
+
+    function generateQRCode() {
         let path = window.location.pathname;
 
         if (/KaraokeScreen/i.test(path)) {
@@ -42,25 +51,25 @@
             "?room=" + encodeURIComponent(roomCode);
 
         var qrContainer = document.getElementById("qrCode");
+        if (!qrContainer) return;
+
         try {
             new QRCode(qrContainer, {
                 text: remoteUrl,
                 width: 90,
                 height: 90,
-                correctLevel: QRCode.CorrectLevel.L,  // Lower error correction = simpler, faster to scan
-                useSVG: false,                        // Canvas renders faster & scans better than SVG
-                colorDark: "#000000",                 // Pure black for maximum contrast
-                colorLight: "#FFFFFF"                 // Pure white background
+                correctLevel: QRCode.CorrectLevel.L,
+                useSVG: false,
+                colorDark: "#000000",
+                colorLight: "#FFFFFF"
             });
         } catch (err) {
             console.warn("QR Code generation failed:", err);
             qrContainer.innerHTML = '<div class="code-qr-error">QR unavailable</div>';
         }
-    })();
+    }
 
-    // Restore whatever queue/now-playing we last saved, so a refresh doesn't
-    // wipe out songs that were already reserved.
-    (function restoreState() {
+    function restoreState() {
         var saved = localStorage.getItem(STORAGE_STATE_KEY);
         if (!saved) return;
         try {
@@ -70,22 +79,28 @@
         } catch (err) {
             // Ignore corrupt saved state and start fresh.
         }
-    })();
+    }
 
-    var socket = new Karaoke.Socket(roomCode);
-    var player = null;
-    var playerReady = false;
-    var audioUnlocked = false;
+    function saveState() {
+        try {
+            localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify({
+                nowPlaying: state.nowPlaying,
+                queue: state.queue
+            }));
+        } catch (err) {
+            // Storage full or restricted; skip persisting.
+        }
+    }
 
-    /* ---- one-time autoplay unlock -------------------------------------- */
-
-    var currentPausedBy = "";
+    /* ---- Overlay & UI Controls ------------------------------------------- */
 
     function showPauseOverlay(isPaused, pausedBy) {
         var overlay = document.getElementById("startOverlay");
         var btn = document.getElementById("startOverlayBtn");
         var hint = document.getElementById("startOverlayHint");
         var pausedByEl = document.getElementById("pausedByText");
+
+        if (!overlay || !btn) return;
 
         if (isPaused) {
             btn.innerHTML = "&#9654; PAUSED - Tap to Resume";
@@ -104,9 +119,11 @@
         }
     }
 
-    (function wireStartOverlay() {
+    function wireStartOverlay() {
         var overlay = document.getElementById("startOverlay");
         var btn = document.getElementById("startOverlayBtn");
+        if (!btn || !overlay) return;
+
         btn.addEventListener("click", function () {
             audioUnlocked = true;
             overlay.hidden = true;
@@ -114,9 +131,14 @@
                 player.playVideo();
             }
         });
-    })();
+    }
 
-    /* ---- YouTube IFrame API -------------------------------------------- */
+    function showIdle(isIdle) {
+        var idleScreen = document.getElementById("idleScreen");
+        if (idleScreen) idleScreen.hidden = !isIdle;
+    }
+
+    /* ---- YouTube IFrame API Integration ---------------------------------- */
 
     window.onYouTubeIframeAPIReady = function () {
         player = new YT.Player("ytPlayer", {
@@ -153,10 +175,23 @@
         document.head.appendChild(tag);
     })();
 
-    /* ---- queue mechanics -------------------------------------------------- */
+    function handlePlaybackError(code) {
+        var idleText = document.querySelector("#idleScreen p");
+        var original = idleText ? idleText.textContent : null;
+
+        showIdle(true);
+        if (idleText) idleText.textContent = "That video isn't available \u2014 skipping to the next song\u2026";
+
+        setTimeout(function () {
+            if (idleText && original !== null) idleText.textContent = original;
+            playNext();
+        }, 2200);
+    }
+
+    /* ---- Queue Mechanics & Actions -------------------------------------- */
 
     function playNext() {
-        showPauseOverlay(false); // Clear any lingering pause overlays
+        showPauseOverlay(false);
         if (state.queue.length === 0) {
             state.nowPlaying = null;
             if (playerReady && player && typeof player.stopVideo === "function") {
@@ -173,23 +208,6 @@
         }
         render();
         broadcastState();
-    }
-
-    function showIdle(isIdle) {
-        document.getElementById("idleScreen").hidden = !isIdle;
-    }
-
-    function handlePlaybackError(code) {
-        var idleText = document.querySelector("#idleScreen p");
-        var original = idleText ? idleText.textContent : null;
-
-        showIdle(true);
-        if (idleText) idleText.textContent = "That video isn't available \u2014 skipping to the next song\u2026";
-
-        setTimeout(function () {
-            if (idleText && original !== null) idleText.textContent = original;
-            playNext();
-        }, 2200);
     }
 
     function applyAction(msg) {
@@ -234,16 +252,16 @@
                     showPauseOverlay(true, currentPausedBy);
                 }
                 else if (msg.cmd === "skip") {
-                    showPauseOverlay(false); // Explicitly hide overlay on skip
-                    playNext();              // Load and play the next video directly
+                    showPauseOverlay(false);
+                    playNext();
                 }
                 else if (msg.cmd === "volume") {
                     if (typeof msg.level === "number") {
                         player.setVolume(msg.level);
                         if (msg.level === 0) {
-                            player.mute();
-                        } else if (player.isMuted()) {
-                            player.unMute();
+                            if (typeof player.mute === "function") player.mute();
+                        } else if (typeof player.isMuted === "function" && player.isMuted()) {
+                            if (typeof player.unMute === "function") player.unMute();
                         }
                     }
                 }
@@ -255,40 +273,93 @@
         }
     }
 
+    /* ---- State Synchronization & Network --------------------------------- */
+
     function broadcastState() {
         saveState();
-        socket.send({
-            type: "state",
-            nowPlaying: state.nowPlaying,
-            queue: state.queue
-        });
-    }
-
-    function saveState() {
-        try {
-            localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify({
+        if (socket) {
+            socket.send({
+                type: "state",
                 nowPlaying: state.nowPlaying,
                 queue: state.queue
-            }));
-        } catch (err) {
-            // Storage might be full/unavailable — not fatal, just skip persisting.
+            });
         }
     }
 
-    /* ---- render ------------------------------------------------------------ */
+    function initSocket() {
+        var connStatus = document.getElementById("connStatus");
+        socket = new Karaoke.Socket(roomCode);
+
+        socket.onMessage = function (msg) {
+            if (msg && msg.action) applyAction(msg);
+        };
+
+        socket.onClose = function () {
+            stopHeartbeat();
+            if (connStatus) {
+                connStatus.hidden = false;
+                connStatus.className = "conn-status conn-status--reconnecting";
+                connStatus.textContent = "Connection lost \u2014 reconnecting\u2026";
+            }
+        };
+
+        socket.onReconnecting = function (attempt) {
+            if (connStatus) {
+                connStatus.hidden = false;
+                connStatus.className = "conn-status conn-status--reconnecting";
+                connStatus.textContent = "Reconnecting\u2026 (attempt " + attempt + ")";
+            }
+        };
+
+        socket.onReconnected = function () {
+            if (connStatus) {
+                connStatus.hidden = false;
+                connStatus.className = "conn-status conn-status--connected";
+                connStatus.textContent = "Back online!";
+                setTimeout(function () { connStatus.hidden = true; }, 2500);
+            }
+            broadcastState();
+            startHeartbeat();
+        };
+
+        socket.connect();
+    }
+
+    /* ---- Heartbeat Mechanism -------------------------------------------- */
+
+    function startHeartbeat() {
+        stopHeartbeat();
+        heartbeatInterval = setInterval(function () {
+            if (socket) {
+                socket.send({ action: "ping", timestamp: Date.now() });
+                broadcastState();
+            }
+        }, 60000);
+    }
+
+    function stopHeartbeat() {
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
+    }
+
+    /* ---- Render UI ------------------------------------------------------- */
 
     function render() {
         var nameEl = document.getElementById("nowSingerName");
         var titleEl = document.getElementById("nowSongTitle");
         if (state.nowPlaying) {
-            nameEl.textContent = state.nowPlaying.singer || "Anonymous";
-            titleEl.textContent = state.nowPlaying.title;
+            if (nameEl) nameEl.textContent = state.nowPlaying.singer || "Anonymous";
+            if (titleEl) titleEl.textContent = state.nowPlaying.title;
         } else {
-            nameEl.textContent = "\u2014";
-            titleEl.textContent = "Nothing yet";
+            if (nameEl) nameEl.textContent = "\u2014";
+            if (titleEl) titleEl.textContent = "Nothing yet";
         }
 
         var list = document.getElementById("queueList");
+        if (!list) return;
+
         list.innerHTML = "";
         if (state.queue.length === 0) {
             var li = document.createElement("li");
@@ -297,6 +368,7 @@
             list.appendChild(li);
             return;
         }
+
         state.queue.forEach(function (item, i) {
             var li = document.createElement("li");
             li.innerHTML =
@@ -316,64 +388,66 @@
         return d.innerHTML;
     }
 
-    /* ---- wire up socket ----------------------------------------------------- */
+    /* ---- Fullscreen Controls -------------------------------------------- */
 
-    var connStatus = document.getElementById("connStatus");
+    function initFullscreenControls() {
+        var btn = document.getElementById('fullscreenBtn');
+        var stage = document.querySelector('.stage');
+        if (!btn) return;
 
-    socket.onMessage = function (msg) {
-        // Only react to action messages from remotes; ignore our own "state" echoes.
-        if (msg && msg.action) applyAction(msg);
-    };
+        var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
+        var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
 
-    socket.onClose = function () {
-        stopHeartbeat(); // Pause heartbeat while disconnected
-        connStatus.hidden = false;
-        connStatus.className = "conn-status conn-status--reconnecting";
-        connStatus.textContent = "Connection lost \u2014 reconnecting\u2026";
-    };
+        function isFullscreen() {
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        }
 
-    socket.onReconnecting = function (attempt) {
-        connStatus.hidden = false;
-        connStatus.className = "conn-status conn-status--reconnecting";
-        connStatus.textContent = "Reconnecting\u2026 (attempt " + attempt + ")";
-    };
+        function updateIcon() {
+            var fs = isFullscreen();
+            if (expandIcon) expandIcon.hidden = fs;
+            if (collapseIcon) collapseIcon.hidden = !fs;
+            btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
+        }
 
-    socket.onReconnected = function () {
-        connStatus.hidden = false;
-        connStatus.className = "conn-status conn-status--connected";
-        connStatus.textContent = "Back online!";
-        broadcastState();
-        startHeartbeat(); // Ensure heartbeat resumes on reconnect
-        setTimeout(function () { connStatus.hidden = true; }, 2500);
-    };
+        function requestFs(el) {
+            if (el.requestFullscreen) return el.requestFullscreen();
+            if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+            if (el.msRequestFullscreen) return el.msRequestFullscreen();
+        }
+
+        function exitFs() {
+            if (document.exitFullscreen) return document.exitFullscreen();
+            if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+            if (document.msExitFullscreen) return document.msExitFullscreen();
+        }
+
+        btn.addEventListener('click', function () {
+            if (isFullscreen()) {
+                exitFs();
+            } else {
+                requestFs(stage || document.documentElement);
+            }
+        });
+
+        document.addEventListener('fullscreenchange', updateIcon);
+        document.addEventListener('webkitfullscreenchange', updateIcon);
+        document.addEventListener('msfullscreenchange', updateIcon);
+    }
+
+    /* ---- App Initialization --------------------------------------------- */
 
     function init() {
-        socket.connect();
+        var roomCodeEl = document.getElementById("roomCode");
+        if (roomCodeEl) roomCodeEl.textContent = roomCode;
+
+        generateQRCode();
+        restoreState();
+        wireStartOverlay();
+        initFullscreenControls();
+        initSocket();
         render();
         showIdle(!state.nowPlaying);
-        startHeartbeat(); // Start 1-minute heartbeat on startup
-    }
-
-    /* ---- Heartbeat Mechanism (Every 60 Seconds) ------------------------ */
-    var heartbeatInterval = null;
-
-    function startHeartbeat() {
-        stopHeartbeat();
-        heartbeatInterval = setInterval(function () {
-            if (socket) {
-                // Send a lightweight ping to keep WebSocket connection active
-                socket.send({ action: "ping", timestamp: Date.now() });
-                // Periodically re-broadcast state to keep remotes synced
-                broadcastState();
-            }
-        }, 60000); // 60,000 ms = 1 minute
-    }
-
-    function stopHeartbeat() {
-        if (heartbeatInterval) {
-            clearInterval(heartbeatInterval);
-            heartbeatInterval = null;
-        }
+        startHeartbeat();
     }
 
     if (document.readyState === "loading") {
@@ -381,47 +455,4 @@
     } else {
         init();
     }
-})();
-
-
-(function () {
-    var btn = document.getElementById('fullscreenBtn');
-    var stage = document.querySelector('.stage');
-    var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
-    var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
-
-    function isFullscreen() {
-        return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-    }
-
-    function updateIcon() {
-        var fs = isFullscreen();
-        expandIcon.hidden = fs;
-        collapseIcon.hidden = !fs;
-        btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
-    }
-
-    function requestFs(el) {
-        if (el.requestFullscreen) return el.requestFullscreen();
-        if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-        if (el.msRequestFullscreen) return el.msRequestFullscreen();
-    }
-
-    function exitFs() {
-        if (document.exitFullscreen) return document.exitFullscreen();
-        if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-        if (document.msExitFullscreen) return document.msExitFullscreen();
-    }
-
-    btn.addEventListener('click', function () {
-        if (isFullscreen()) {
-            exitFs();
-        } else {
-            requestFs(stage || document.documentElement);
-        }
-    });
-
-    document.addEventListener('fullscreenchange', updateIcon);
-    document.addEventListener('webkitfullscreenchange', updateIcon);
-    document.addEventListener('msfullscreenchange', updateIcon);
 })();
