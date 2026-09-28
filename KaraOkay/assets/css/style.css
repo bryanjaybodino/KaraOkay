@@ -1385,3 +1385,24 @@ input, select, textarea {
             font-size: 11px;
         }
 }
+
+.search-row-container {
+    position: relative; /* Required for absolute positioning of dropdown */
+    width: 100%;
+}
+
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Keeps dropdown on top of search results */
+    background: var(--bg-panel-raised, #1f232a);
+    border: 1px solid var(--line, #333);
+    border-radius: 0 0 8px 8px;
+    list-style: none;
+    margin: 4px 0 0 0;
+    padding: 0;
+    max-height: 240px;
+    overflow-y: auto;
+}

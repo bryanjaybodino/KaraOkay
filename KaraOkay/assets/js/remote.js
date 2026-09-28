@@ -500,42 +500,55 @@
     }
 
     function fetchAutocompleteSuggestions(query) {
-        var suggestUrl = "https://suggestqueries.google.com/complete/search?client=chrome&ds=yt&q=" + encodeURIComponent(query);
+        if (!query) {
+            hideAutocomplete();
+            return;
+        }
 
-        fetch(suggestUrl)
-            .then(function (res) {
-                return res.json();
-            })
-            .then(function (data) {
-                if (data && data[1] && data[1].length > 0) {
-                    renderAutocomplete(data[1]);
-                } else {
-                    hideAutocomplete();
-                }
-            })
-            .catch(function () {
-                // Fallback: JSONP fallback if direct fetch is restricted
-                var callbackName = "ytCallback_" + Math.floor(Math.random() * 100000);
+        var callbackName = "ytSuggest_" + Math.floor(Math.random() * 100000);
 
-                window[callbackName] = function (data) {
-                    delete window[callbackName];
-                    var script = document.getElementById(callbackName);
-                    if (script) script.remove();
+        // Define temporary global callback
+        window[callbackName] = function (data) {
+            // Cleanup script tag & global reference
+            delete window[callbackName];
+            var script = document.getElementById(callbackName);
+            if (script && script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
 
-                    if (data && data[1]) {
-                        var items = data[1].map(function (item) {
-                            return Array.isArray(item) ? item[0] : item;
-                        });
-                        renderAutocomplete(items);
-                    }
-                };
+            if (data && data[1] && data[1].length > 0) {
+                var suggestions = data[1].map(function (item) {
+                    return Array.isArray(item) ? item[0] : item;
+                });
+                renderAutocomplete(suggestions);
+            } else {
+                hideAutocomplete();
+            }
+        };
 
-                var script = document.createElement("script");
-                script.id = callbackName;
-                script.src = "https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&client=jsonp&q="
-                    + encodeURIComponent(query) + "&jsonp=" + callbackName;
-                document.body.appendChild(script);
-            });
+        // Remove existing pending script tags if user is typing fast
+        var oldScript = document.getElementById("ytSuggestScript");
+        if (oldScript && oldScript.parentNode) {
+            oldScript.parentNode.removeChild(oldScript);
+        }
+
+        // Append JSONP script tag
+        var script = document.createElement("script");
+        script.id = "ytSuggestScript";
+        script.src = "https://suggestqueries.google.com/complete/search"
+            + "?client=youtube"
+            + "&ds=yt"
+            + "&q=" + encodeURIComponent(query + " karaoke minus one")
+            + "&jsonp=" + callbackName;
+
+        // Handle network errors
+        script.onerror = function () {
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+            hideAutocomplete();
+        };
+
+        document.body.appendChild(script);
     }
 
     function renderAutocomplete(suggestions) {
