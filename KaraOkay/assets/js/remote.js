@@ -575,24 +575,53 @@
         return li;
     }
 
-    /* ---- Live Reactions Handler ----------------------------------------- */
+    /* ---- Live Reactions Handler (with Rate Limiting) -------------------- */
+
+    var REACTION_COOLDOWN_MS = 500; // Time limit between reactions in milliseconds (0.5 second)
+    var lastReactionTime = 0;
 
     var reactionBtns = document.querySelectorAll(".reaction-btn");
     Array.prototype.forEach.call(reactionBtns, function (btn) {
         btn.addEventListener("click", function () {
+            var now = Date.now();
+            var timeSinceLast = now - lastReactionTime;
+
+            // Block reaction if sent before cooldown expires
+            if (timeSinceLast < REACTION_COOLDOWN_MS) {
+                return;
+            }
+
             var emoji = btn.getAttribute("data-reaction");
             if (socket && emoji) {
+                lastReactionTime = now;
+
                 socket.send({
                     action: "reaction",
                     type: emoji
                 });
 
+                // Apply visual feedback & temporarily disable buttons during cooldown
+                setReactionButtonsState(true);
+
                 // Subtle click animation feedback on phone
                 btn.style.transform = "scale(1.2)";
                 setTimeout(function () { btn.style.transform = "scale(1)"; }, 150);
+
+                // Re-enable reaction buttons after cooldown
+                setTimeout(function () {
+                    setReactionButtonsState(false);
+                }, REACTION_COOLDOWN_MS);
             }
         });
     });
+
+    function setReactionButtonsState(disabled) {
+        Array.prototype.forEach.call(reactionBtns, function (b) {
+            b.disabled = disabled;
+            b.style.opacity = disabled ? "0.5" : "1";
+            b.style.cursor = disabled ? "not-allowed" : "pointer";
+        });
+    }
     /* ---- Helpers & Utilities ------------------------------------------- */
 
     function escapeHtml(s) {
