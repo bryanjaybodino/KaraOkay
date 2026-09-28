@@ -276,8 +276,6 @@ input, select, textarea {
     text-align: center;
 }
 
-
-
 .idle-screen, .start-overlay {
     position: absolute;
     inset: 0;
@@ -444,7 +442,7 @@ input, select, textarea {
     }
 
     .queue-list .qthumb {
-        margin-right:5px;
+        margin-right: 5px;
         flex-shrink: 0;
         width: 40px;
         height: 30px;
@@ -823,7 +821,6 @@ input, select, textarea {
     display: none !important;
 }
 
-
 .result-list .fav-btn {
     background: transparent;
     color: var(--gold);
@@ -837,6 +834,48 @@ input, select, textarea {
         box-shadow: 0 0 8px var(--gold-glow);
     }
 
+/* ---- On-Screen Banner Message Styling --------------------------------- */
+
+.banner-message {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(50px) scale(0.9);
+    z-index: 12;
+    background: rgba(13, 7, 30, 0.92);
+    backdrop-filter: blur(16px);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius-lg);
+    padding: 16px 32px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 20px var(--gold-glow);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    max-width: 80%;
+    pointer-events: none;
+}
+
+    .banner-message.is-visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+.banner-message__sender {
+    font-family: var(--font-code);
+    font-size: min(1vw, 1.2vh);
+    text-transform: uppercase;
+    letter-spacing: .15em;
+    color: var(--cyan);
+    margin-bottom: 4px;
+}
+
+.banner-message__text {
+    font-size: min(2vw, 3vh);
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 0 12px var(--gold-glow);
+    word-break: break-word;
+}
 
 /* ---- Floating Reaction Animations ----------------------------------- */
 

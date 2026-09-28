@@ -64,6 +64,17 @@
                         <input type="range" id="volumeSlider" min="0" max="100" value="100" style="flex: 1;" />
                         <span id="volumeValue">100%</span>
                     </div>
+
+                    <!-- On-Screen Banner Message Control -->
+                    <div class="msg-panel" style="margin-top: 20px; border-top: 1px dashed var(--line); padding-top: 15px;">
+                        <div class="eyebrow" style="margin-bottom: 8px;">Send Screen Message</div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="screenMsgInput" maxlength="100" placeholder="Happy Birthday! 🎉" style="flex: 1; background: var(--bg-panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px; color: var(--text);" />
+                            <button type="button" id="sendMsgBtn" style="background: var(--cyan); color: #041a18; padding: 0 16px; font-weight: 700; border-radius: var(--radius-sm);">Send</button>
+                        </div>
+                        <div id="msgStatus" style="font-size: 11px; margin-top: 6px; min-height: 14px;"></div>
+                    </div>
+
                     <!-- Live Reactions Control Panel -->
                     <div class="reactions-panel" style="margin-top: 20px; text-align: center;">
                         <div class="eyebrow" style="margin-bottom: 8px;">Send Reaction</div>

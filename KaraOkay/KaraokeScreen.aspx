@@ -48,6 +48,11 @@
                 <div class="player-frame" id="playerFrame">
                     <div class="marquee-border"></div>
                     <div id="ytPlayer" class="iframe-blocker"></div>
+                    <!-- On-Screen Message Banner -->
+                    <div class="banner-message" id="bannerMessage" hidden>
+                        <div class="banner-message__sender" id="bannerSender">Bryan Jay</div>
+                        <div class="banner-message__text" id="bannerText">Happy Birthday! 🎉</div>
+                    </div>
                     <!-- Floating Reactions Overlay Container -->
                     <div class="reaction-container" id="reactionContainer"></div>
                     <div class="idle-screen" id="idleScreen">

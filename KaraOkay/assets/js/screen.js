@@ -23,6 +23,7 @@
     var audioUnlocked = false;
     var currentPausedBy = "";
     var heartbeatInterval = null;
+    var messageTimer = null;
 
     /* ---- Storage Initialization & Room Setup ----------------------------- */
 
@@ -210,6 +211,30 @@
         broadcastState();
     }
 
+    function displayBannerMessage(text, sender) {
+        var banner = document.getElementById("bannerMessage");
+        var senderEl = document.getElementById("bannerSender");
+        var textEl = document.getElementById("bannerText");
+
+        if (!banner || !senderEl || !textEl) return;
+
+        senderEl.textContent = sender ? sender + " says:" : "Announcement:";
+        textEl.textContent = text;
+
+        banner.hidden = false;
+        banner.classList.remove("is-visible");
+        void banner.offsetWidth; // Force CSS reflow to restart animation
+        banner.classList.add("is-visible");
+
+        if (messageTimer) clearTimeout(messageTimer);
+        messageTimer = setTimeout(function () {
+            banner.classList.remove("is-visible");
+            setTimeout(function () {
+                banner.hidden = true;
+            }, 400); // Wait for fade-out transition
+        }, 6000); // Display on screen for 6 seconds
+    }
+
     function applyAction(msg) {
         switch (msg.action) {
             case "add":
@@ -244,6 +269,12 @@
             case "reaction":
                 if (msg.type) {
                     spawnReaction(msg.type);
+                }
+                break;
+
+            case "message":
+                if (msg.text) {
+                    displayBannerMessage(msg.text, msg.sender);
                 }
                 break;
 
@@ -462,6 +493,7 @@
             }
         }, 2500);
     }
+
     /* ---- App Initialization --------------------------------------------- */
 
     function init() {

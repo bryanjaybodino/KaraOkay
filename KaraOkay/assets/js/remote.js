@@ -224,6 +224,59 @@
         });
     }
 
+    /* ---- On-Screen Message Broadcast Handler ---------------------------- */
+
+    var screenMsgInput = document.getElementById("screenMsgInput");
+    var sendMsgBtn = document.getElementById("sendMsgBtn");
+    var msgStatus = document.getElementById("msgStatus");
+
+    var MSG_COOLDOWN_MS = 5000; // 5-second anti-spam delay
+    var lastMsgTime = 0;
+
+    if (sendMsgBtn && screenMsgInput) {
+        sendMsgBtn.addEventListener("click", sendScreenMessage);
+        screenMsgInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendScreenMessage();
+            }
+        });
+    }
+
+    function sendScreenMessage() {
+        var text = screenMsgInput.value.trim();
+        if (!text) return;
+
+        var now = Date.now();
+        if (now - lastMsgTime < MSG_COOLDOWN_MS) {
+            if (msgStatus) {
+                msgStatus.style.color = "var(--gold)";
+                msgStatus.textContent = "Please wait a few seconds before sending another message.";
+            }
+            return;
+        }
+
+        if (socket) {
+            lastMsgTime = now;
+            socket.send({
+                action: "message",
+                text: text,
+                sender: singerName || "Anonymous"
+            });
+
+            screenMsgInput.value = "";
+            if (msgStatus) {
+                msgStatus.style.color = "var(--cyan)";
+                msgStatus.textContent = "Message sent to TV screen! 🎉";
+                setTimeout(function () {
+                    if (msgStatus) msgStatus.textContent = "";
+                }, 3000);
+            }
+        } else {
+            alert("Please connect to a room first!");
+        }
+    }
+
     document.getElementById("leaveBtn").addEventListener("click", function () {
         if (socket) socket.close();
         document.getElementById("connStatus").hidden = true;
