@@ -319,7 +319,20 @@
     document.getElementById("skipBtn").addEventListener("click", function () {
         socket.send({ action: "control", cmd: "skip" });
     });
+    /* ---- TV Fullscreen Remote Toggle ------------------------------------ */
 
+    var remoteFsBtn = document.getElementById("remoteFullscreenBtn");
+    if (remoteFsBtn) {
+        remoteFsBtn.addEventListener("click", function () {
+            if (socket) {
+                socket.send({
+                    action: "toggleFullscreen"
+                });
+            } else {
+                alert("Please connect to a room first!");
+            }
+        });
+    }
     /* ---- YouTube Search -------------------------------------------------- */
 
     var searchInput = document.getElementById("searchInput");

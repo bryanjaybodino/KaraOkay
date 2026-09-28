@@ -19,7 +19,12 @@
     var heartbeatInterval = null;
     var messageTimer = null;
     var timeCheckInterval = null;
-    var isPopupShown = false;
+    var popupTimer = null;
+
+    // Track which threshold notifications have already triggered for the active song
+    var notified60s = false;
+    var notified30s = false;
+    var notified10s = false;
 
     var roomCode = localStorage.getItem(STORAGE_ROOM_KEY);
     if (!roomCode) {
@@ -127,7 +132,7 @@
             host: "https://www.youtube.com",
             playerVars: {
                 autoplay: 1,
-                controls: 0, // Disable native YouTube controls & overlays
+                controls: 0,
                 rel: 0,
                 playsinline: 1,
                 modestbranding: 1,
@@ -183,7 +188,13 @@
         }, 2200);
     }
 
-    /* ---- Upcoming Popup Trigger (Triggers 15s before song ends) ---------- */
+    /* ---- 3x Upcoming Pop-up Notifications (60s, 30s, 10s) ---------------- */
+
+    function resetNotificationFlags() {
+        notified60s = false;
+        notified30s = false;
+        notified10s = false;
+    }
 
     function startTimeCheck() {
         stopTimeCheck();
@@ -194,9 +205,22 @@
             var currentTime = player.getCurrentTime();
             var timeLeft = duration - currentTime;
 
-            // Trigger popup when 15 seconds remain in current song
-            if (timeLeft <= 15 && timeLeft > 0 && !isPopupShown && state.queue.length > 0) {
-                showUpcomingPopup();
+            if (state.queue.length === 0 || duration <= 0) return;
+
+            // Notification 1: ~60 seconds left
+            if (timeLeft <= 60 && timeLeft > 50 && !notified60s) {
+                notified60s = true;
+                triggerPopupFlash();
+            }
+            // Notification 2: ~30 seconds left
+            else if (timeLeft <= 30 && timeLeft > 20 && !notified30s) {
+                notified30s = true;
+                triggerPopupFlash();
+            }
+            // Notification 3: ~10 seconds left
+            else if (timeLeft <= 10 && timeLeft > 0 && !notified10s) {
+                notified10s = true;
+                triggerPopupFlash();
             }
         }, 1000);
     }
@@ -208,7 +232,7 @@
         }
     }
 
-    function showUpcomingPopup() {
+    function triggerPopupFlash() {
         var popup = document.getElementById("upcomingPopup");
         var singerEl = document.getElementById("upcomingSinger");
         var titleEl = document.getElementById("upcomingTitle");
@@ -220,9 +244,15 @@
         if (titleEl) titleEl.textContent = nextSong.title;
 
         popup.hidden = false;
+        popup.classList.remove("is-visible");
         void popup.offsetWidth;
         popup.classList.add("is-visible");
-        isPopupShown = true;
+
+        if (popupTimer) clearTimeout(popupTimer);
+        // Show pop-up for 5 seconds then hide automatically
+        popupTimer = setTimeout(function () {
+            hideUpcomingPopup();
+        }, 5000);
     }
 
     function hideUpcomingPopup() {
@@ -233,14 +263,15 @@
         setTimeout(function () {
             popup.hidden = true;
         }, 400);
-        isPopupShown = false;
     }
 
     /* ---- Queue Mechanics & Actions -------------------------------------- */
 
     function playNext() {
+        resetNotificationFlags();
         hideUpcomingPopup();
         showPauseOverlay(false);
+
         if (state.queue.length === 0) {
             state.nowPlaying = null;
             if (playerReady && player && typeof player.stopVideo === "function") {
@@ -259,6 +290,38 @@
         broadcastState();
     }
 
+    /* ---- Fullscreen Controls -------------------------------------------- */
+    function initFullscreenControls() {
+        var btn = document.getElementById('fullscreenBtn');
+        var stage = document.getElementById('stageContainer');
+        if (!btn || !stage) return;
+
+        var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
+        var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
+
+        function isFullscreen() {
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        }
+
+        function updateIcon() {
+            var fs = isFullscreen();
+            if (expandIcon) expandIcon.hidden = fs;
+            if (collapseIcon) collapseIcon.hidden = !fs;
+            btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
+
+            if (fs) {
+                stage.classList.add('is-stage-fullscreen');
+            } else {
+                stage.classList.remove('is-stage-fullscreen');
+            }
+        }
+
+        btn.addEventListener('click', toggleStageFullscreen);
+
+        document.addEventListener('fullscreenchange', updateIcon);
+        document.addEventListener('webkitfullscreenchange', updateIcon);
+        document.addEventListener('msfullscreenchange', updateIcon);
+    }
     function displayBannerMessage(text, sender) {
         var banner = document.getElementById("bannerMessage");
         var senderEl = document.getElementById("bannerSender");
@@ -281,6 +344,25 @@
                 banner.hidden = true;
             }, 400);
         }, 6000);
+    }
+
+    function toggleStageFullscreen() {
+        var stage = document.getElementById('stageContainer');
+        if (!stage) return;
+
+        function isFullscreen() {
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        }
+
+        if (isFullscreen()) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+        } else {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            else if (stage.msRequestFullscreen) stage.msRequestFullscreen();
+        }
     }
 
     function applyAction(msg) {
@@ -324,6 +406,10 @@
                 if (msg.text) {
                     displayBannerMessage(msg.text, msg.sender);
                 }
+                break;
+
+            case "toggleFullscreen":
+                toggleStageFullscreen();
                 break;
 
             case "control":
@@ -417,7 +503,7 @@
                 socket.send({ action: "ping", timestamp: Date.now() });
                 broadcastState();
             }
-        }, 60000);
+        }, 30000);
     }
 
     function stopHeartbeat() {
@@ -468,60 +554,6 @@
         d.textContent = s == null ? "" : s;
         return d.innerHTML;
     }
-
-    /* ---- Fullscreen Controls -------------------------------------------- */
-
-    function initFullscreenControls() {
-        var btn = document.getElementById('fullscreenBtn');
-        var stage = document.getElementById('stageContainer');
-        if (!btn || !stage) return;
-
-        var expandIcon = btn.querySelector('.fullscreen-btn__icon--expand');
-        var collapseIcon = btn.querySelector('.fullscreen-btn__icon--collapse');
-
-        function isFullscreen() {
-            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-        }
-
-        function updateIcon() {
-            var fs = isFullscreen();
-            if (expandIcon) expandIcon.hidden = fs;
-            if (collapseIcon) collapseIcon.hidden = !fs;
-            btn.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
-
-            // Toggle CSS fullscreen class to expand player and hide right panel
-            if (fs) {
-                stage.classList.add('is-stage-fullscreen');
-            } else {
-                stage.classList.remove('is-stage-fullscreen');
-            }
-        }
-
-        function requestFs(el) {
-            if (el.requestFullscreen) return el.requestFullscreen();
-            if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-            if (el.msRequestFullscreen) return el.msRequestFullscreen();
-        }
-
-        function exitFs() {
-            if (document.exitFullscreen) return document.exitFullscreen();
-            if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-            if (document.msExitFullscreen) return document.msExitFullscreen();
-        }
-
-        btn.addEventListener('click', function () {
-            if (isFullscreen()) {
-                exitFs();
-            } else {
-                requestFs(stage || document.documentElement);
-            }
-        });
-
-        document.addEventListener('fullscreenchange', updateIcon);
-        document.addEventListener('webkitfullscreenchange', updateIcon);
-        document.addEventListener('msfullscreenchange', updateIcon);
-    }
-
     function spawnReaction(emoji) {
         var container = document.getElementById("reactionContainer");
         if (!container) return;

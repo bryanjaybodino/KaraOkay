@@ -40,7 +40,12 @@
                 <div class="room-pill">Room <strong id="roomPillCode"></strong></div>
                 <button type="button" id="leaveBtn" class="link-btn">Leave</button>
             </div>
-
+            <div class="remote-controls">
+                <button type="button" id="remoteFullscreenBtn" class="btn btn--secondary" title="Toggle TV Fullscreen">
+                    &#x26F6; TV Fullscreen
+   
+                </button>
+            </div>
             <div class="conn-status" id="connStatus" hidden></div>
 
             <nav class="remote-tabs" id="remoteTabs">
