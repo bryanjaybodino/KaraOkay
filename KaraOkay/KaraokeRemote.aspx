@@ -47,6 +47,7 @@
                 <button type="button" class="remote-tabs__btn is-active" data-tab="queue">Now Playing</button>
                 <button type="button" class="remote-tabs__btn" data-tab="search">Search Song</button>
                 <button type="button" class="remote-tabs__btn" data-tab="mine">My Songs</button>
+                <button type="button" class="remote-tabs__btn" data-tab="favs">Favorites</button>
             </nav>
 
             <div class="tab-panel" id="tabPanel-queue">
@@ -87,6 +88,12 @@
                 <section class="queue-panel-remote">
                     <div class="eyebrow">My Songs</div>
                     <ol class="queue-list" id="myQueueList"></ol>
+                </section>
+            </div>
+            <div class="tab-panel" id="tabPanel-favs" hidden>
+                <section class="queue-panel-remote">
+                    <div class="eyebrow">My Favorites</div>
+                    <ul class="result-list" id="favsList"></ul>
                 </section>
             </div>
         </div>

@@ -135,6 +135,8 @@
         localStorage.setItem("karaokeRoomCode", room);
 
         joinRoom(room);
+        // Call renderFavorites upon joining room / state initialization
+        renderFavorites();
     });
 
     function joinRoom(room) {
@@ -218,7 +220,8 @@
     var tabPanels = {
         queue: document.getElementById("tabPanel-queue"),
         search: document.getElementById("tabPanel-search"),
-        mine: document.getElementById("tabPanel-mine")
+        mine: document.getElementById("tabPanel-mine"),
+        favs: document.getElementById("tabPanel-favs")
     };
 
     Array.prototype.forEach.call(tabButtons, function (btn) {
@@ -348,17 +351,28 @@
             var title = decodeHtmlEntities(item.snippet.title);
             var channel = decodeHtmlEntities(item.snippet.channelTitle);
             var thumb = item.snippet.thumbnails.default.url;
+            var songData = { videoId: videoId, title: title, channel: channel, thumb: thumb };
 
             var li = document.createElement("li");
+            var favClass = isFavorite(videoId) ? "is-fav" : "";
+            var favIcon = isFavorite(videoId) ? "&#9733;" : "&#9734;";
+
             li.innerHTML =
                 '<img src="' + thumb + '" alt="">' +
                 '<span class="rmeta">' +
                 '<span class="rtitle">' + escapeHtml(title) + '</span>' +
                 '<span class="rchannel">' + escapeHtml(channel) + '</span>' +
                 '</span>' +
-                '<button type="button">Reserve</button>';
+                '<button type="button" class="fav-btn ' + favClass + '" title="Favorite" style="padding: 8px; margin-right: 4px;">' + favIcon + '</button>' +
+                '<button type="button" class="reserve-btn">Reserve</button>';
 
-            var reserveBtn = li.querySelector("button");
+            var favBtn = li.querySelector(".fav-btn");
+            favBtn.addEventListener("click", function () {
+                toggleFavorite(songData);
+                favBtn.innerHTML = isFavorite(videoId) ? "&#9733;" : "&#9734;";
+            });
+
+            var reserveBtn = li.querySelector(".reserve-btn");
             reserveBtn.addEventListener("click", function () {
                 reserveBtn.disabled = true;
                 reserveBtn.textContent = "Checking\u2026";
@@ -378,10 +392,7 @@
                         thumb: thumb
                     });
 
-                    // Update button text to check mark icon
                     reserveBtn.innerHTML = "&#10003; Reserved";
-
-                    // Highlight list item and button border
                     li.classList.add("is-reserved");
                     reserveBtn.classList.add("is-reserved");
                 });
@@ -521,5 +532,96 @@
         var d = document.createElement("div");
         d.innerHTML = s == null ? "" : s;
         return d.textContent;
+    }
+
+
+    function renderFavorites() {
+        var favsList = document.getElementById("favsList");
+        if (!favsList) return;
+
+        favsList.innerHTML = "";
+        var favs = getFavorites();
+
+        if (favs.length === 0) {
+            favsList.innerHTML = '<li class="qempty">No favorites saved yet. Star songs in search to save them!</li>';
+            return;
+        }
+
+        favs.forEach(function (item) {
+            var li = document.createElement("li");
+            li.innerHTML =
+                '<img src="' + item.thumb + '" alt="">' +
+                '<span class="rmeta">' +
+                '<span class="rtitle">' + escapeHtml(item.title) + '</span>' +
+                '<span class="rchannel">' + escapeHtml(item.channel || "") + '</span>' +
+                '</span>' +
+                '<button type="button" class="fav-btn is-fav" title="Remove Favorite" style="padding: 8px; margin-right: 4px;">&#9733;</button>' +
+                '<button type="button" class="reserve-btn">Reserve</button>';
+
+            var favBtn = li.querySelector(".fav-btn");
+            favBtn.addEventListener("click", function () {
+                toggleFavorite(item);
+            });
+
+            var reserveBtn = li.querySelector(".reserve-btn");
+            reserveBtn.addEventListener("click", function () {
+                reserveBtn.disabled = true;
+                reserveBtn.textContent = "Checking\u2026";
+
+                testPlayability(item.videoId, function (ok) {
+                    if (!ok) {
+                        reserveBtn.textContent = "Unavailable";
+                        li.style.opacity = "0.5";
+                        return;
+                    }
+                    socket.send({
+                        action: "add",
+                        singer: singerName,
+                        videoId: item.videoId,
+                        title: item.title,
+                        thumb: item.thumb
+                    });
+
+                    reserveBtn.innerHTML = "&#10003; Reserved";
+                    li.classList.add("is-reserved");
+                    reserveBtn.classList.add("is-reserved");
+                });
+            });
+
+            favsList.appendChild(li);
+        });
+    }
+
+    var FAVS_STORAGE_KEY = "karaokeFavorites";
+
+    function getFavorites() {
+        try {
+            return JSON.parse(localStorage.getItem(FAVS_STORAGE_KEY)) || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveFavorites(favs) {
+        try {
+            localStorage.setItem(FAVS_STORAGE_KEY, JSON.stringify(favs));
+        } catch (e) { /* ignore storage errors */ }
+    }
+
+    function isFavorite(videoId) {
+        var favs = getFavorites();
+        return favs.some(function (item) { return item.videoId === videoId; });
+    }
+
+    function toggleFavorite(songItem) {
+        var favs = getFavorites();
+        var index = favs.findIndex(function (item) { return item.videoId === songItem.videoId; });
+        if (index > -1) {
+            favs.splice(index, 1);
+        } else {
+            favs.push(songItem);
+        }
+        saveFavorites(favs);
+        renderFavorites();
     }
 })();

@@ -822,3 +822,17 @@ input, select, textarea {
 [hidden] {
     display: none !important;
 }
+
+
+.result-list .fav-btn {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--line);
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+}
+
+    .result-list .fav-btn:hover {
+        border-color: var(--gold);
+        box-shadow: 0 0 8px var(--gold-glow);
+    }
