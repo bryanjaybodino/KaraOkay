@@ -14,7 +14,7 @@
         <asp:ScriptManager ID="ScriptManager1" EnableCdn="false" EnablePageMethods="true" EnablePartialRendering="true" AsyncPostBackTimeout="99999999" ScriptMode="Release" ValidateRequestMode="Enabled" EnableScriptLocalization="true" EnableScriptGlobalization="true" LoadScriptsBeforeUI="false" CompositeScript-ScriptMode="Release" CompositeScript-ResourceUICultures="Release" runat="server"></asp:ScriptManager>
         <div class="stage" id="stageContainer">
 
-            <header class="stage__header">
+            <header class="stage__header" style="display: none">
                 <div class="stage__header-left">
                     <div class="stage__brand">
                         <span class="logo">KARA<span class="logo__accent">-OKAY</span></span>
@@ -27,20 +27,6 @@
                         <div class="conn-status" id="connStatus" hidden></div>
                     </div>
                 </div>
-                <button type="button" class="fullscreen-btn" id="fullscreenBtn" title="Toggle fullscreen" aria-label="Toggle fullscreen">
-                    <svg class="fullscreen-btn__icon fullscreen-btn__icon--expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
-                        <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
-                        <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
-                        <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
-                    </svg>
-                    <svg class="fullscreen-btn__icon fullscreen-btn__icon--collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
-                        <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
-                        <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
-                        <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
-                        <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
-                    </svg>
-                </button>
             </header>
 
             <div class="stage__main">
@@ -95,6 +81,20 @@
                 <aside class="queue-panel" id="queuePanel">
                     <!-- Upcoming Song Card with Large Thumbnail Preview -->
                     <div class="upcoming-song">
+                        <button type="button"  style="position:absolute;top:1.2rem;right:1.2rem;" class="fullscreen-btn" id="fullscreenBtn" title="Toggle fullscreen" aria-label="Toggle fullscreen">
+                            <svg class="fullscreen-btn__icon fullscreen-btn__icon--expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                            </svg>
+                            <svg class="fullscreen-btn__icon fullscreen-btn__icon--collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+                                <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+                                <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+                                <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+                                <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+                            </svg>
+                        </button>
                         <div class="upcoming-song__badge">
                             <span class="pulse-dot"></span>UPCOMING SONG
                         </div>

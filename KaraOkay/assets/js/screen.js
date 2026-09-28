@@ -365,21 +365,15 @@
     }
 
     function toggleStageFullscreen() {
-        var stage = document.getElementById('stageContainer');
-        if (!stage) return;
-
-        function isFullscreen() {
-            return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-        }
-
-        if (isFullscreen()) {
-            if (document.exitFullscreen) document.exitFullscreen();
-            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            else if (document.msExitFullscreen) document.msExitFullscreen();
+        if (!document.fullscreenElement) {
+            // Request fullscreen on the entire document (like pressing F11)
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
         } else {
-            if (stage.requestFullscreen) stage.requestFullscreen();
-            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
-            else if (stage.msRequestFullscreen) stage.msRequestFullscreen();
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
         }
     }
 
