@@ -719,7 +719,7 @@ input, select, textarea {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 340px;
+    max-height: 500px;
     overflow-y: auto;
 }
 
@@ -1067,4 +1067,321 @@ input, select, textarea {
     overflow: hidden;
     text-overflow: ellipsis;
     margin-top: 2px;
+}
+/* ---- ADDED: Search Layout Switcher & Autocomplete ------------------- */
+
+/* Global Box Sizing Safety Rule */
+.search-panel *,
+.search-panel *::before,
+.search-panel *::after {
+    box-sizing: border-box;
+}
+
+.search-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.layout-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-panel-raised);
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+}
+
+.layout-btn {
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+    .layout-btn.is-active {
+        background: var(--cyan);
+        color: #041a18;
+        font-weight: 800;
+    }
+
+.search-row-container {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+/* Autocomplete Suggestion Dropdown */
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: #190e38;
+    border: 1px solid var(--line-bright);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 4px 0;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.autocomplete-item {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item:active {
+        background: var(--bg-panel-raised);
+        color: var(--cyan);
+    }
+
+    .autocomplete-item .ac-icon {
+        font-size: 11px;
+        opacity: 0.6;
+    }
+
+/* ---- ADDED: Grid & List Layout Styles ------------------------------- */
+
+/* Grid View (Default Layout) */
+.result-list.view-grid {
+    display: grid;
+    /* minmax(0, 1fr) prevents grid items from expanding past 50% width */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    max-height: 520px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    overflow-x: hidden; /* Prevents container-level horizontal overflow */
+    overflow-y: auto;
+}
+
+    .result-list.view-grid .search-card {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px;
+        background: var(--bg-panel-raised);
+        border-radius: var(--radius);
+        border: 1px solid var(--line);
+        min-width: 0; /* Critical CSS fix to allow child text truncation */
+        box-sizing: border-box;
+    }
+
+    .result-list.view-grid .thumb-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: #000;
+    }
+
+        .result-list.view-grid .thumb-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-list.view-grid .thumb-wrapper .fav-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+            .result-list.view-grid .thumb-wrapper .fav-btn.is-fav {
+                color: #ffd700;
+            }
+
+    /* Hide inline list favorite button in Grid mode */
+    .result-list.view-grid .list-fav-btn {
+        display: none;
+    }
+
+    .result-list.view-grid .rmeta {
+        margin: 8px 0;
+        min-width: 0; /* Prevents text overflow inside flex parent */
+        width: 100%;
+    }
+
+    .result-list.view-grid .rtitle {
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word; /* Wraps very long continuous strings/words */
+        min-height: 2.6em; /* Replaced fixed height to avoid vertical clipping issues */
+    }
+
+    .result-list.view-grid .rchannel {
+        font-size: 10px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        margin-top: 2px;
+        width: 100%;
+    }
+
+    .result-list.view-grid .reserve-btn {
+        width: 100%;
+        padding: 8px;
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--cyan, #00f2fe);
+        color: #041a18;
+        font-size: 11px;
+        font-weight: 700;
+        border: none;
+        border-radius: var(--radius-sm, 4px);
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.1s ease;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+
+/* List View (Secondary Mode) */
+.result-list.view-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 520px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+    .result-list.view-list .search-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-panel-raised);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+        border: 1px solid var(--line);
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .result-list.view-list .thumb-wrapper {
+        position: relative;
+        width: 80px;
+        height: 50px;
+        flex-shrink: 0;
+    }
+
+        .result-list.view-list .thumb-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .result-list.view-list .thumb-wrapper .fav-btn {
+            display: none;
+        }
+
+    .result-list.view-list .rmeta {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .result-list.view-list .rtitle {
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    .result-list.view-list .rchannel {
+        font-size: 11px;
+        color: var(--text-muted);
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .result-list.view-list .list-fav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        color: var(--text-muted, #888);
+        cursor: pointer;
+        padding: 4px;
+        flex-shrink: 0;
+    }
+
+        .result-list.view-list .list-fav-btn.is-fav {
+            color: #ffd700;
+        }
+
+    .result-list.view-list .reserve-btn {
+        padding: 8px 12px;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+/* Mobile Screen Specific Tweaks (< 360px) */
+@media (max-width: 360px) {
+    .result-list.view-grid {
+        gap: 6px;
+    }
+
+        .result-list.view-grid .search-card {
+            padding: 6px;
+        }
+
+        .result-list.view-grid .rtitle {
+            font-size: 11px;
+        }
 }

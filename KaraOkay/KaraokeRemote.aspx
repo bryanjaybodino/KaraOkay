@@ -99,12 +99,26 @@
             </div>
             <div class="tab-panel" id="tabPanel-search" hidden>
                 <section class="search-panel">
-                    <div class="eyebrow">Add a Song</div>
-                    <div class="search-row">
-                        <input type="text" id="searchInput" placeholder="Search YouTube&hellip;" />
-                        <button type="button" id="searchBtn">Search</button>
+                    <div class="search-header">
+                        <div class="eyebrow">Add a Song</div>
+                        <!-- View Toggle Switcher -->
+                        <div class="layout-toggle" id="searchLayoutToggle">
+                            <button type="button" class="layout-btn" data-layout="list" title="List View">&#9776; List</button>
+                            <button type="button" class="layout-btn is-active" data-layout="grid" title="Grid View">&#8862; Grid</button>
+                        </div>
                     </div>
-                    <ul class="result-list" id="searchResults"></ul>
+
+                    <div class="search-row-container">
+                        <div class="search-row">
+                            <input type="text" id="searchInput" placeholder="Search YouTube&hellip;" autocomplete="off" />
+                            <button type="button" id="searchBtn">Search</button>
+                        </div>
+                        <!-- Autocomplete Suggestions Dropdown -->
+                        <ul class="autocomplete-list" id="autocompleteResults" hidden></ul>
+                    </div>
+
+                    <!-- Defaults to view-grid -->
+                    <ul class="result-list view-grid" id="searchResults"></ul>
                 </section>
             </div>
 

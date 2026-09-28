@@ -421,33 +421,171 @@
 
     /* ---- Render Helpers & UI Views -------------------------------------- */
 
+    var currentSearchLayout = localStorage.getItem("karaokeSearchLayout") || "grid";
+
+    function applySearchLayout(layout) {
+        currentSearchLayout = layout;
+        localStorage.setItem("karaokeSearchLayout", layout);
+
+        var searchResultsEl = document.getElementById("searchResults");
+        if (searchResultsEl) {
+            searchResultsEl.classList.toggle("view-grid", layout === "grid");
+            searchResultsEl.classList.toggle("view-list", layout === "list");
+        }
+
+        var toggleBtns = document.querySelectorAll("#searchLayoutToggle .layout-btn");
+        Array.prototype.forEach.call(toggleBtns, function (btn) {
+            btn.classList.toggle("is-active", btn.getAttribute("data-layout") === layout);
+        });
+    }
+
+    // Bind layout toggle buttons
+    var layoutBtns = document.querySelectorAll("#searchLayoutToggle .layout-btn");
+    Array.prototype.forEach.call(layoutBtns, function (btn) {
+        btn.addEventListener("click", function () {
+            applySearchLayout(btn.getAttribute("data-layout"));
+        });
+    });
+
+    /* ---- FIX: Reliable YouTube Autocomplete Fetcher --------------------- */
+
+    var autocompleteList = document.getElementById("autocompleteResults");
+    var autocompleteTimer = null;
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            var q = searchInput.value.trim();
+            if (autocompleteTimer) clearTimeout(autocompleteTimer);
+
+            if (!q) {
+                hideAutocomplete();
+                return;
+            }
+
+            // Debounce input calls (180ms)
+            autocompleteTimer = setTimeout(function () {
+                fetchAutocompleteSuggestions(q);
+            }, 180);
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".search-row-container")) {
+                hideAutocomplete();
+            }
+        });
+    }
+
+    function fetchAutocompleteSuggestions(query) {
+        var suggestUrl = "https://suggestqueries.google.com/complete/search?client=chrome&ds=yt&q=" + encodeURIComponent(query);
+
+        fetch(suggestUrl)
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (data) {
+                if (data && data[1] && data[1].length > 0) {
+                    renderAutocomplete(data[1]);
+                } else {
+                    hideAutocomplete();
+                }
+            })
+            .catch(function () {
+                // Fallback: JSONP fallback if direct fetch is restricted
+                var callbackName = "ytCallback_" + Math.floor(Math.random() * 100000);
+
+                window[callbackName] = function (data) {
+                    delete window[callbackName];
+                    var script = document.getElementById(callbackName);
+                    if (script) script.remove();
+
+                    if (data && data[1]) {
+                        var items = data[1].map(function (item) {
+                            return Array.isArray(item) ? item[0] : item;
+                        });
+                        renderAutocomplete(items);
+                    }
+                };
+
+                var script = document.createElement("script");
+                script.id = callbackName;
+                script.src = "https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&client=jsonp&q="
+                    + encodeURIComponent(query) + "&jsonp=" + callbackName;
+                document.body.appendChild(script);
+            });
+    }
+
+    function renderAutocomplete(suggestions) {
+        if (!autocompleteList) return;
+        autocompleteList.innerHTML = "";
+
+        suggestions.slice(0, 6).forEach(function (text) {
+            var itemText = Array.isArray(text) ? text[0] : text;
+            var li = document.createElement("li");
+            li.className = "autocomplete-item";
+            li.innerHTML = '<span class="ac-icon">&#128099;</span> <span class="ac-text">' + escapeHtml(itemText) + '</span>';
+
+            li.addEventListener("click", function () {
+                searchInput.value = itemText;
+                hideAutocomplete();
+                runSearch();
+            });
+
+            autocompleteList.appendChild(li);
+        });
+
+        autocompleteList.hidden = false;
+    }
+
+    function hideAutocomplete() {
+        if (autocompleteList) {
+            autocompleteList.hidden = true;
+            autocompleteList.innerHTML = "";
+        }
+    }
+
+    /* ---- FIX: renderResults (Renders favorite button in both grid and list view) ---- */
+
     function renderResults(items) {
+        if (!items) return;
         searchResults.innerHTML = "";
+
+        applySearchLayout(currentSearchLayout);
+
         items.forEach(function (item) {
             var videoId = item.id.videoId;
             var title = decodeHtmlEntities(item.snippet.title);
             var channel = decodeHtmlEntities(item.snippet.channelTitle);
-            var thumb = item.snippet.thumbnails.default.url;
+            var thumb = (item.snippet.thumbnails.medium || item.snippet.thumbnails.high || item.snippet.thumbnails.default).url;
             var songData = { videoId: videoId, title: title, channel: channel, thumb: thumb };
 
             var li = document.createElement("li");
             li.setAttribute("data-video-id", videoId);
+            li.className = "search-card";
 
-            var favClass = isFavorite(videoId) ? "is-fav" : "";
-            var favIcon = isFavorite(videoId) ? "&#9733;" : "&#9734;";
+            var isFav = isFavorite(videoId);
+            var favClass = isFav ? "is-fav" : "";
+            var favIcon = isFav ? "&#9733;" : "&#9734;";
 
             li.innerHTML =
-                '<img src="' + thumb + '" alt="">' +
+                '<div class="thumb-wrapper">' +
+                '<img src="' + thumb + '" alt="" loading="lazy">' +
+                '<button type="button" class="fav-btn ' + favClass + '" title="Favorite">' + favIcon + '</button>' +
+                '</div>' +
                 '<span class="rmeta">' +
-                '<span class="rtitle">' + escapeHtml(title) + '</span>' +
+                '<span class="rtitle" title="' + escapeHtml(title) + '">' + escapeHtml(title) + '</span>' +
                 '<span class="rchannel">' + escapeHtml(channel) + '</span>' +
                 '</span>' +
-                '<button type="button" class="fav-btn ' + favClass + '" title="Favorite" style="padding: 8px; margin-right: 4px;">' + favIcon + '</button>' +
+                '<button type="button" class="list-fav-btn ' + favClass + '" title="Favorite">' + favIcon + '</button>' +
                 '<button type="button" class="reserve-btn">Reserve</button>';
 
             var favBtn = li.querySelector(".fav-btn");
             favBtn.addEventListener("click", function () {
-                toggleFavorite(songData);
+                toggleFavState(songData, li, videoId);
+            });
+
+            var listFavBtn = li.querySelector(".list-fav-btn");
+            listFavBtn.addEventListener("click", function () {
+                toggleFavState(songData, li, videoId);
             });
 
             var reserveBtn = li.querySelector(".reserve-btn");
@@ -459,16 +597,29 @@
         });
     }
 
+    function toggleFavState(songData, cardEl, videoId) {
+        toggleFavorite(songData);
+        var activeFav = isFavorite(videoId);
+        var icon = activeFav ? "&#9733;" : "&#9734;";
+
+        var btns = cardEl.querySelectorAll(".fav-btn, .list-fav-btn");
+        Array.prototype.forEach.call(btns, function (btn) {
+            btn.classList.toggle("is-fav", activeFav);
+            btn.innerHTML = icon;
+        });
+    }
+
     function updateSearchResultStar(videoId) {
         if (!searchResults) return;
         var itemLi = searchResults.querySelector('li[data-video-id="' + videoId + '"]');
         if (itemLi) {
-            var favBtn = itemLi.querySelector(".fav-btn");
-            if (favBtn) {
-                var fav = isFavorite(videoId);
-                favBtn.innerHTML = fav ? "&#9733;" : "&#9734;";
-                favBtn.classList.toggle("is-fav", fav);
-            }
+            var activeFav = isFavorite(videoId);
+            var icon = activeFav ? "&#9733;" : "&#9734;";
+            var btns = itemLi.querySelectorAll(".fav-btn, .list-fav-btn");
+            Array.prototype.forEach.call(btns, function (btn) {
+                btn.innerHTML = icon;
+                btn.classList.toggle("is-fav", activeFav);
+            });
         }
     }
 
